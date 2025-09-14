@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, NavLink } from "react-router";
+import TrackMateLogo from "../TrackMateLogo/TrackMateLogo";
 
 const Navbar = () => {
   const links = (
@@ -49,18 +50,14 @@ const Navbar = () => {
             {links}
           </ul>
         </div>
-        {/* <div className="flex  items-center">
+        <div className="flex  items-center">
           <Link
             to="/"
             className=" font-josefin font-semibold normal-case text-2xl"
           >
-            <img className="w-[55px]" src={headerPhoto} alt="" />
+            <TrackMateLogo />
           </Link>
-        </div> */}
-
-        <Link to="/" className="btn btn-ghost text-xl text-[#4167F0]">
-          Track Mate
-        </Link>
+        </div>
       </div>
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal px-1">{links}</ul>
