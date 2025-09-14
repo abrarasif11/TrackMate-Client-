@@ -24,7 +24,7 @@ const HowItWorks = () => {
     <section className="py-12 px-6 bg-white">
       <div className="max-w-6xl mx-auto text-center">
         <h2 className="text-3xl font-bold mb-10">
-          <span className="bg-blue-100 px-2 rounded">How it Works</span>
+          <span className=" px-2 rounded">How it Works</span>
         </h2>
 
         <div className="grid gap-6 md:grid-cols-3">
