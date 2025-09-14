@@ -17,7 +17,7 @@ const Brand = () => {
   return (
     <section className="py-16 bg-base-100">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center">
-        <h2 className="text-3xl md:text-4xl font-bold mb-8">
+        <h2 className="text-3xl md:text-4xl font-bold mb-20">
           We've helped thousands of sales teams
         </h2>
 
@@ -32,7 +32,7 @@ const Brand = () => {
               <img
                 src={logo}
                 alt="Client Logo"
-                className="h-16 w-auto object-contain"
+                className="h-[24px] w-[176px] object-contain"
               />
             </div>
           ))}
