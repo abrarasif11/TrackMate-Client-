@@ -18,8 +18,8 @@ const Register = () => {
   >
     {/* Title */}
     <div>
-      <h1 className="text-3xl font-bold text-gray-900">Welcome Back</h1>
-      <p className="text-gray-600">Login with TrackMate</p>
+      <h1 className="text-3xl font-bold text-gray-900">Create an Account</h1>
+      <p className="text-gray-600">Register with TrackMate</p>
     </div>
 
     {/* name */}
@@ -91,12 +91,12 @@ const Register = () => {
       </div>
     </div>
 
-    {/* Login Button */}
+    {/* register Button */}
     <button
       type="submit"
       className="w-full py-3 bg-[#CAEB66] text-black font-medium rounded-md hover:bg-[#b8d95b] transition"
     >
-      Login
+      Register
     </button>
 
     {/* Register */}
