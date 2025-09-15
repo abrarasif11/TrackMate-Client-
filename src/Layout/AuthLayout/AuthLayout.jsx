@@ -1,16 +1,20 @@
 import React from "react";
 import { Outlet } from "react-router";
+import authImg from "../../assets/assests/authImage.png";
+import TrackMateLogo from "../../Shared/TrackMateLogo/TrackMateLogo";
 
 const AuthLayout = () => {
   return (
-    <div className="hero bg-base-200 min-h-screen">
+    <div className="p-12 bg-base-200 ">
+      <div>
+        <TrackMateLogo />
+      </div>
       <div className="hero-content flex-col lg:flex-row-reverse">
-        <img
-          src="https://img.daisyui.com/images/stock/photo-1635805737707-575885ab0820.webp"
-          className="max-w-sm rounded-lg shadow-2xl"
-        />
-        <div>
-         <Outlet/>
+        <div className="flex-1">
+          <img src={authImg} className="max-w-sm rounded-lg shadow-2xl" />
+        </div>
+        <div className="flex-1">
+          <Outlet />
         </div>
       </div>
     </div>
