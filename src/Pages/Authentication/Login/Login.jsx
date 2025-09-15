@@ -1,5 +1,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
+import { Link } from "react-router";
+import useAuth from "../../../Hooks/useAuth";
 
 const Login = () => {
   const {
@@ -11,6 +13,18 @@ const Login = () => {
   const onSubmit = (data) => {
     console.log(data);
   };
+
+  const { signInWithGoogle } = useAuth();
+
+  const handleGoogleSignIn = () => {
+    signInWithGoogle()
+      .then((res) => {
+        console.log(res.user);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
@@ -18,7 +32,7 @@ const Login = () => {
     >
       {/* Title */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Welcome Back</h1>
+        <h1 className="text-5xl mb-2 font-bold text-gray-900">Welcome Back</h1>
         <p className="text-gray-600">Login with TrackMate</p>
       </div>
 
@@ -62,11 +76,12 @@ const Login = () => {
         {errors.password?.type === "required" && (
           <p className="text-red-700 mt-2">Password is required</p>
         )}
-        {
-            errors.password?.type === 'pattern' && <p className="text-red-700 mt-2">
-                Password must be uppercase, lowercase, number, special char, min 6 character
-            </p>
-        }
+        {errors.password?.type === "pattern" && (
+          <p className="text-red-700 mt-2">
+            Password must be uppercase, lowercase, number, special char, min 6
+            character
+          </p>
+        )}
         <div className="mt-2">
           <a href="#" className="text-sm text-gray-500 hover:text-[#A0C948]">
             Forget Password?
@@ -76,6 +91,7 @@ const Login = () => {
 
       {/* Login Button */}
       <button
+        
         type="submit"
         className="w-full py-3 bg-[#CAEB66] text-black font-medium rounded-md hover:bg-[#b8d95b] transition"
       >
@@ -85,9 +101,9 @@ const Login = () => {
       {/* Register */}
       <p className="text-sm text-center text-gray-600">
         Don’t have any account?{" "}
-        <a href="#" className="text-[#A0C948] font-medium">
+        <Link to="/register" className="text-[#A0C948] font-medium">
           Register
-        </a>
+        </Link>
       </p>
 
       {/* Divider */}
@@ -99,6 +115,7 @@ const Login = () => {
 
       {/* Google Login */}
       <button
+      onClick={handleGoogleSignIn}
         type="button"
         className="w-full flex items-center justify-center gap-3 border rounded-md py-3 bg-gray-100 hover:bg-gray-200 transition"
       >

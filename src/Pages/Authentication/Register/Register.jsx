@@ -1,6 +1,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import useAuth from "../../../Hooks/useAuth";
+import { Link } from "react-router";
 
 const Register = () => {
   const {
@@ -9,17 +10,29 @@ const Register = () => {
     formState: { errors },
   } = useForm();
 
-  const { createUser } = useAuth()
+  const { signInWithGoogle } = useAuth();
+
+  const handleGoogleSignIn = () => {
+    signInWithGoogle()
+      .then((res) => {
+        console.log(res.user);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  const { createUser } = useAuth();
 
   const onSubmit = (data) => {
     console.log(data);
     createUser(data.email, data.password)
-    .then(res => {
-        console.log(res.user)
-    })
-    .catch(err => {
-        console.log(err)
-    })
+      .then((res) => {
+        console.log(res.user);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
   return (
     <form
@@ -28,7 +41,9 @@ const Register = () => {
     >
       {/* Title */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Create an Account</h1>
+        <h1 className="text-5xl mb-2 font-bold text-gray-900">
+          Create an Account
+        </h1>
         <p className="text-gray-600">Register with TrackMate</p>
       </div>
 
@@ -112,10 +127,10 @@ const Register = () => {
 
       {/* Register */}
       <p className="text-sm text-center text-gray-600">
-        Don’t have any account?{" "}
-        <a href="#" className="text-[#A0C948] font-medium">
-          Register
-        </a>
+        Already have an account?{" "}
+        <Link to="/login" className="text-[#A0C948] font-medium">
+          Login
+        </Link>
       </p>
 
       {/* Divider */}
@@ -127,6 +142,7 @@ const Register = () => {
 
       {/* Google Login */}
       <button
+        onClick={handleGoogleSignIn}
         type="button"
         className="w-full flex items-center justify-center gap-3 border rounded-md py-3 bg-gray-100 hover:bg-gray-200 transition"
       >
