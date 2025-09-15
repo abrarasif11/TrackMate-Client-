@@ -1,8 +1,17 @@
 import React from "react";
+import { useForm } from "react-hook-form";
 
 const Login = () => {
+  const { register, handleSubmit } = useForm();
+
+  const onSubmit = (data) => {
+    console.log(data);
+  };
   return (
-    <form className="w-full max-w-md space-y-6">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="w-full max-w-md space-y-6"
+    >
       {/* Title */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Welcome Back</h1>
@@ -11,11 +20,15 @@ const Login = () => {
 
       {/* Email */}
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="email"
+          className="block text-sm font-medium text-gray-700"
+        >
           Email
         </label>
         <input
           type="email"
+          {...register("email")}
           id="email"
           placeholder="Email"
           className="w-full mt-1 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CAEB66]"
@@ -24,11 +37,18 @@ const Login = () => {
 
       {/* Password */}
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="password"
+          className="block text-sm font-medium text-gray-700"
+        >
           Password
         </label>
         <input
           type="password"
+          {...register("password", {
+            pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
+            required: true,
+          })}
           id="password"
           placeholder="Password"
           className="w-full mt-1 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CAEB66]"
