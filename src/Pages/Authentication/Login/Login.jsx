@@ -2,7 +2,11 @@ import React from "react";
 import { useForm } from "react-hook-form";
 
 const Login = () => {
-  const { register, handleSubmit } = useForm();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
 
   const onSubmit = (data) => {
     console.log(data);
@@ -28,6 +32,7 @@ const Login = () => {
         </label>
         <input
           type="email"
+          required
           {...register("email")}
           id="email"
           placeholder="Email"
@@ -46,13 +51,22 @@ const Login = () => {
         <input
           type="password"
           {...register("password", {
-            pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
+            pattern:
+              /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
             required: true,
           })}
           id="password"
           placeholder="Password"
           className="w-full mt-1 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CAEB66]"
         />
+        {errors.password?.type === "required" && (
+          <p className="text-red-700 mt-2">Password is required</p>
+        )}
+        {
+            errors.password?.type === 'pattern' && <p className="text-red-700 mt-2">
+                Password must be uppercase, lowercase, number, special char, min 6 character
+            </p>
+        }
         <div className="mt-2">
           <a href="#" className="text-sm text-gray-500 hover:text-[#A0C948]">
             Forget Password?
