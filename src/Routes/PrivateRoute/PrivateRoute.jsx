@@ -1,7 +1,8 @@
 import React from 'react'
-import useAuth from '../../Hooks/useAuth'
+
 import Loader from '../../Shared/Loader/Loader';
 import { Navigate } from 'react-router';
+import useAuth from '../../hooks/useAuth';
 
 const PrivateRoute = ({children}) => {
    const { user,loading } = useAuth();
@@ -15,4 +16,4 @@ const PrivateRoute = ({children}) => {
   return children;
 }
 
-export default PrivateRoute;
+export default PrivateRoute
