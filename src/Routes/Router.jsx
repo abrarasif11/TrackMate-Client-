@@ -17,6 +17,7 @@ export const router = createBrowserRouter([
       {
         path: "/coverage",
         element: <Coverage />,
+        loader: () => fetch('ServiceCenter.json')
       },
     ],
   },

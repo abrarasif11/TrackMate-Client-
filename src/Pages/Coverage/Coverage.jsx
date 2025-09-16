@@ -3,12 +3,15 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { useLoaderData } from "react-router";
+import BangladeshMap from "./BangladeshMap";
 
-export default function Coverage() {
+const Coverage = () => {
+  const serviceCenter = useLoaderData();
+  console.log(serviceCenter)
   const [search, setSearch] = useState("");
 
-  // Center Bangladesh
-  const bangladeshPosition = [23.685, 90.3563];
+  
 
   return (
     <div className=" bg-white  py-10 px-4 flex justify-center">
@@ -49,27 +52,11 @@ export default function Coverage() {
         <h2 className="text-xl font-semibold text-gray-800 mb-4">
           We deliver almost all over Bangladesh
         </h2>
-
-        {/* Map Section (React Leaflet) */}
-        <div className="w-full h-[400px] rounded-xl overflow-hidden shadow-md">
-          <MapContainer
-            center={bangladeshPosition}
-            zoom={7}
-            scrollWheelZoom={true}
-            className="h-full w-full"
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-
-            {/* Example marker on Dhaka */}
-            <Marker position={[23.8103, 90.4125]}>
-              <Popup>Dhaka – Central Hub of Our Parcel Coverage</Popup>
-            </Marker>
-          </MapContainer>
-        </div>
+       <BangladeshMap
+       serviceCenter={serviceCenter}
+       />
       </div>
     </div>
   );
 }
+export default Coverage;
