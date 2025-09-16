@@ -1,27 +1,34 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast, { Toaster } from "react-hot-toast";
 import { useLoaderData } from "react-router";
-import useAuth from '../../hooks/useAuth';
+import useAuth from "../../hooks/useAuth";
 
 const SendParcel = () => {
   const serviceCenter = useLoaderData() || [];
-  const { user } = useAuth(); // ✅ logged-in user info
+  const { user } = useAuth();
 
   // State
   const [parcelType, setParcelType] = useState("Document");
   const [confirmData, setConfirmData] = useState(null);
   const [priceBreak, setPriceBreak] = useState(null);
 
-  // react-hook-form
+  // react-hook-form (including setValue so we can prefill senderEmail)
   const {
     register,
     handleSubmit,
     watch,
     reset,
+    setValue,
     formState: { errors },
   } = useForm();
 
+  // prefill senderEmail with logged-in user email (if exists)
+  useEffect(() => {
+    if (user?.email) setValue("senderEmail", user.email);
+  }, [user, setValue]);
+
+  // watched values for dependent selects / preview
   const senderRegion = watch("senderRegion");
   const receiverRegion = watch("receiverRegion");
 
@@ -39,7 +46,14 @@ const SendParcel = () => {
     ];
   };
 
-  // Price calculation helper
+  // Generate a reasonably-unique tracking ID
+  const generateTrackingId = () =>
+    `TRK-${Date.now().toString(36).toUpperCase()}-${Math.random()
+      .toString(36)
+      .slice(2, 7)
+      .toUpperCase()}`;
+
+  // Pricing logic (returns { within, outside })
   const computePricing = (type, weight) => {
     const w = Number(weight) || 0;
     let within = { base: 0, extra: 0, outsideSurcharge: 0, total: 0, lines: [] };
@@ -87,37 +101,44 @@ const SendParcel = () => {
     return { within, outside };
   };
 
-  // handle proceed
+  // Proceed -> prepare confirmation data + priceBreak
   const handleProceed = (data) => {
     const pricing = computePricing(parcelType, data.parcelWeight);
     const isWithin = data.senderWarehouse === data.receiverWarehouse;
     const selected = isWithin ? pricing.within : pricing.outside;
 
-    // add extra data
+    // Add metadata needed for tracking & audit
     const parcelData = {
       ...data,
       parcelType,
-      createdBy: user?.email || "unknown", // logged-in user email
-      senderEmail: data.senderEmail, // sender email from form
-      createdAt: new Date().toISOString(), // ISO timestamp
+      createdBy: user?.email || "unknown",
+      createdAt: new Date().toISOString(),
+      trackingId: generateTrackingId(),
+      status: "Pending",
     };
 
     setPriceBreak({ pricing, selected, isWithin });
     setConfirmData(parcelData);
   };
 
-  // final confirm
-  const handleFinalConfirm = () => {
-    console.log("📦 Parcel Data to Save:", {
+  // Final confirm: here you would POST to your backend
+  const handleFinalConfirm = async () => {
+    const payload = {
       ...confirmData,
-      price: priceBreak.selected.total,
-    });
+      price: priceBreak?.selected?.total ?? 0,
+    };
+
+    // Example: send payload to server
+    // await fetch("/api/parcels", { method: "POST", body: JSON.stringify(payload) })
+
+    console.log("Saving parcel:", payload);
 
     toast.success("Parcel booked successfully!", {
       duration: 3000,
       position: "top-right",
     });
 
+    // reset form & state
     reset();
     setParcelType("Document");
     setConfirmData(null);
@@ -127,12 +148,11 @@ const SendParcel = () => {
   return (
     <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow p-8">
       <Toaster />
-
       <h2 className="text-3xl font-bold text-[#03464D] mb-2">Add Parcel</h2>
       <p className="text-gray-600 mb-6">Enter your parcel details</p>
 
       {!confirmData ? (
-        // ========= FORM =========
+        // ====== FORM ======
         <form onSubmit={handleSubmit(handleProceed)}>
           {/* Parcel Type */}
           <div className="flex items-center space-x-6 mb-6">
@@ -165,28 +185,33 @@ const SendParcel = () => {
                 Parcel Name
               </label>
               <input
-                {...register("parcelName", { required: true })}
+                {...register("parcelName", { required: "Parcel name is required" })}
                 type="text"
                 placeholder="Parcel Name"
                 className="w-full border rounded-lg px-3 py-2"
               />
               {errors.parcelName && (
-                <span className="text-red-500 text-sm">
-                  Parcel name is required
-                </span>
+                <span className="text-red-500 text-sm">{errors.parcelName.message}</span>
               )}
             </div>
+
             <div>
               <label className="block text-sm font-medium mb-1">
                 Parcel Weight (KG)
               </label>
               <input
-                {...register("parcelWeight", { required: true, min: 0 })}
+                {...register("parcelWeight", {
+                  required: "Parcel weight is required",
+                  min: { value: 0, message: "Weight must be >= 0" },
+                })}
                 type="number"
                 step="0.1"
                 placeholder="Parcel Weight (KG)"
                 className="w-full border rounded-lg px-3 py-2"
               />
+              {errors.parcelWeight && (
+                <span className="text-red-500 text-sm">{errors.parcelWeight.message}</span>
+              )}
             </div>
           </div>
 
@@ -197,53 +222,82 @@ const SendParcel = () => {
               <h3 className="text-lg font-semibold mb-4">Sender Details</h3>
               <div className="space-y-4">
                 <input
-                  {...register("senderName", { required: true })}
+                  {...register("senderName", { required: "Sender name is required" })}
                   type="text"
                   placeholder="Sender Name"
                   className="w-full border rounded-lg px-3 py-2"
                 />
+                {errors.senderName && (
+                  <span className="text-red-500 text-sm">{errors.senderName.message}</span>
+                )}
+
                 <input
-                  {...register("senderEmail", { required: true })}
+                  {...register("senderEmail", {
+                    required: "Sender email is required",
+                    pattern: { value: /^\S+@\S+\.\S+$/, message: "Enter a valid email" },
+                  })}
                   type="email"
                   placeholder="Sender Email"
                   className="w-full border rounded-lg px-3 py-2"
                 />
+                {errors.senderEmail && (
+                  <span className="text-red-500 text-sm">{errors.senderEmail.message}</span>
+                )}
+
                 <select
-                  {...register("senderRegion", { required: true })}
+                  {...register("senderRegion", { required: "Sender region is required" })}
                   className="w-full border rounded-lg px-3 py-2"
                 >
                   <option value="">Select your region</option>
                   {uniqueRegions.map((region) => (
-                    <option key={region}>{region}</option>
+                    <option value={region} key={region}>
+                      {region}
+                    </option>
                   ))}
                 </select>
+                {errors.senderRegion && (
+                  <span className="text-red-500 text-sm">{errors.senderRegion.message}</span>
+                )}
+
                 <select
-                  {...register("senderWarehouse", { required: true })}
+                  {...register("senderWarehouse", { required: "Sender warehouse is required" })}
                   className="w-full border rounded-lg px-3 py-2"
                   disabled={!senderRegion}
                 >
                   <option value="">
-                    {senderRegion
-                      ? "Select Warehouse / District"
-                      : "Select region first"}
+                    {senderRegion ? "Select Warehouse / District" : "Select region first"}
                   </option>
                   {senderRegion &&
                     getDistrictByRegion(senderRegion).map((d) => (
-                      <option key={d}>{d}</option>
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
                     ))}
                 </select>
+                {errors.senderWarehouse && (
+                  <span className="text-red-500 text-sm">{errors.senderWarehouse.message}</span>
+                )}
+
                 <input
-                  {...register("senderAddress", { required: true })}
+                  {...register("senderAddress", { required: "Sender address is required" })}
                   type="text"
                   placeholder="Address"
                   className="w-full border rounded-lg px-3 py-2"
                 />
+                {errors.senderAddress && (
+                  <span className="text-red-500 text-sm">{errors.senderAddress.message}</span>
+                )}
+
                 <input
-                  {...register("senderContact", { required: true })}
+                  {...register("senderContact", { required: "Sender contact is required" })}
                   type="text"
                   placeholder="Sender Contact No"
                   className="w-full border rounded-lg px-3 py-2"
                 />
+                {errors.senderContact && (
+                  <span className="text-red-500 text-sm">{errors.senderContact.message}</span>
+                )}
+
                 <textarea
                   {...register("pickupInstruction")}
                   placeholder="Pickup Instruction"
@@ -257,47 +311,69 @@ const SendParcel = () => {
               <h3 className="text-lg font-semibold mb-4">Receiver Details</h3>
               <div className="space-y-4">
                 <input
-                  {...register("receiverName", { required: true })}
+                  {...register("receiverName", { required: "Receiver name is required" })}
                   type="text"
                   placeholder="Receiver Name"
                   className="w-full border rounded-lg px-3 py-2"
                 />
+                {errors.receiverName && (
+                  <span className="text-red-500 text-sm">{errors.receiverName.message}</span>
+                )}
+
                 <select
-                  {...register("receiverRegion", { required: true })}
+                  {...register("receiverRegion", { required: "Receiver region is required" })}
                   className="w-full border rounded-lg px-3 py-2"
                 >
                   <option value="">Select your region</option>
                   {uniqueRegions.map((region) => (
-                    <option key={region}>{region}</option>
+                    <option value={region} key={region}>
+                      {region}
+                    </option>
                   ))}
                 </select>
+                {errors.receiverRegion && (
+                  <span className="text-red-500 text-sm">{errors.receiverRegion.message}</span>
+                )}
+
                 <select
-                  {...register("receiverWarehouse", { required: true })}
+                  {...register("receiverWarehouse", { required: "Receiver warehouse is required" })}
                   className="w-full border rounded-lg px-3 py-2"
                   disabled={!receiverRegion}
                 >
                   <option value="">
-                    {receiverRegion
-                      ? "Select Warehouse / District"
-                      : "Select region first"}
+                    {receiverRegion ? "Select Warehouse / District" : "Select region first"}
                   </option>
                   {receiverRegion &&
                     getDistrictByRegion(receiverRegion).map((d) => (
-                      <option key={d}>{d}</option>
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
                     ))}
                 </select>
+                {errors.receiverWarehouse && (
+                  <span className="text-red-500 text-sm">{errors.receiverWarehouse.message}</span>
+                )}
+
                 <input
-                  {...register("receiverAddress", { required: true })}
+                  {...register("receiverAddress", { required: "Receiver address is required" })}
                   type="text"
                   placeholder="Receiver Address"
                   className="w-full border rounded-lg px-3 py-2"
                 />
+                {errors.receiverAddress && (
+                  <span className="text-red-500 text-sm">{errors.receiverAddress.message}</span>
+                )}
+
                 <input
-                  {...register("receiverContact", { required: true })}
+                  {...register("receiverContact", { required: "Receiver contact is required" })}
                   type="text"
                   placeholder="Receiver Contact No"
                   className="w-full border rounded-lg px-3 py-2"
                 />
+                {errors.receiverContact && (
+                  <span className="text-red-500 text-sm">{errors.receiverContact.message}</span>
+                )}
+
                 <textarea
                   {...register("deliveryInstruction")}
                   placeholder="Delivery Instruction"
@@ -307,9 +383,7 @@ const SendParcel = () => {
             </div>
           </div>
 
-          <p className="text-sm text-gray-500 mt-6">
-            * PickUp Time 4pm-7pm Approx.
-          </p>
+          <p className="text-sm text-gray-500 mt-6">* PickUp Time 4pm-7pm Approx.</p>
 
           <div className="mt-6">
             <button
@@ -321,7 +395,7 @@ const SendParcel = () => {
           </div>
         </form>
       ) : (
-        // ========= CONFIRMATION =========
+        // ====== CONFIRMATION ======
         <div>
           <h3 className="text-xl font-bold mb-4 text-center">
             Confirm Your Parcel Booking
@@ -331,36 +405,50 @@ const SendParcel = () => {
             <table className="w-full text-left">
               <tbody>
                 <tr>
+                  <td className="font-medium">Tracking ID</td>
+                  <td>{confirmData?.trackingId}</td>
+                </tr>
+                <tr>
+                  <td className="font-medium">Status</td>
+                  <td>{confirmData?.status}</td>
+                </tr>
+                <tr>
                   <td className="font-medium">Parcel Type</td>
-                  <td>{confirmData.parcelType}</td>
+                  <td>{confirmData?.parcelType}</td>
                 </tr>
                 <tr>
                   <td className="font-medium">Weight</td>
-                  <td>{confirmData.parcelWeight} kg</td>
+                  <td>{confirmData?.parcelWeight} kg</td>
                 </tr>
-                {/* <tr>
-                  <td className="font-medium">Created By</td>
-                  <td>{confirmData.createdBy}</td>
-                </tr> */}
                 <tr>
                   <td className="font-medium">Sender Email</td>
-                  <td>{confirmData.senderEmail}</td>
+                  <td>{confirmData?.senderEmail}</td>
+                </tr>
+                <tr>
+                  <td className="font-medium">Created By</td>
+                  <td>{confirmData?.createdBy}</td>
                 </tr>
                 <tr>
                   <td className="font-medium">Created At</td>
-                  <td>{new Date(confirmData.createdAt).toLocaleString()}</td>
+                  <td>
+                    {confirmData?.createdAt
+                      ? new Date(confirmData.createdAt).toLocaleString()
+                      : "—"}
+                  </td>
                 </tr>
-                <tr>
+
+                <tr className="border-t">
                   <td className="font-bold">Price Breakdown</td>
                   <td>
-                    {priceBreak.selected.lines.map((line, idx) => (
+                    {priceBreak?.selected?.lines?.map((line, idx) => (
                       <div key={idx}>{line}</div>
                     ))}
                   </td>
                 </tr>
+
                 <tr>
                   <td className="font-bold">Total Cost</td>
-                  <td>৳{priceBreak.selected.total}</td>
+                  <td>৳{priceBreak?.selected?.total ?? 0}</td>
                 </tr>
               </tbody>
             </table>
