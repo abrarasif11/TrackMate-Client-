@@ -12,7 +12,7 @@ const Navbar = () => {
         <NavLink to="/coverage">Coverage</NavLink>
       </li>
       <li>
-        <NavLink to="/createJob">Create Job</NavLink>
+        <NavLink to="/sendParcel">Send Parcel</NavLink>
       </li>
       <li>
         <NavLink to="/allJobs">All Jobs</NavLink>
@@ -63,11 +63,14 @@ const Navbar = () => {
         <ul className="menu menu-horizontal px-1">{links}</ul>
       </div>
       <div className="navbar-end">
-        <Link className="mr-3 underline text-[#4167F0]" to="/register">
+        {/* <Link className="mr-3 underline text-[#4167F0]" to="/register">
           Register
+        </Link> */}
+        <Link to="/signin">
+          <button className="btn bg-[#CAEB66] text-black">Log In</button>
         </Link>
         <Link to="/signin">
-          <button className="btn bg-[#4167F0] text-white">Log In</button>
+          {/* <button className="btn bg-[#CAEB66] ml-2 text-black">Log In</button> */}
         </Link>
       </div>
     </div>
