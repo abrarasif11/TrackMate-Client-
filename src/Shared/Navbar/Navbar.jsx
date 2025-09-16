@@ -1,8 +1,10 @@
 import React from "react";
 import { Link, NavLink } from "react-router";
 import TrackMateLogo from "../TrackMateLogo/TrackMateLogo";
+import useAuth from "../../hooks/useAuth";
 
 const Navbar = () => {
+  const { user } = useAuth();
   const links = (
     <>
       <li>
@@ -14,9 +16,11 @@ const Navbar = () => {
       <li>
         <NavLink to="/sendParcel">Send Parcel</NavLink>
       </li>
-      <li>
-        <NavLink to="/allJobs">All Jobs</NavLink>
-      </li>
+      {user && (
+        <li>
+          <NavLink to="/dashboard">Dashboard</NavLink>
+        </li>
+      )}
       <li>
         <NavLink to="/myPostedJobs">My Posted Jobs</NavLink>
       </li>
