@@ -1,6 +1,7 @@
 import React from "react";
-import { Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet } from "react-router-dom";
 import MyParcels from "../Pages/Dashboard/MyParcels/MyParcels";
+import TrackMateLogo from "../Shared/TrackMateLogo/TrackMateLogo";
 
 const DashboardLayout = () => {
   return (
@@ -34,7 +35,7 @@ const DashboardLayout = () => {
         </div>
 
         {/* Page content here */}
-        <MyParcels/>
+        <MyParcels />
         {/* Page content here */}
       </div>
 
@@ -46,11 +47,12 @@ const DashboardLayout = () => {
         ></label>
         <ul className="menu bg-base-200 text-base-content min-h-full w-80 p-4">
           {/* Sidebar content here */}
+          <TrackMateLogo />
+          {/* <li>
+            <Link to='/'>Home</Link>
+          </li> */}
           <li>
-            <a>Sidebar Item 1</a>
-          </li>
-          <li>
-            <a>Sidebar Item 2</a>
+            <NavLink to='/dashboard/myParcels'>My Parcels</NavLink>
           </li>
         </ul>
       </div>

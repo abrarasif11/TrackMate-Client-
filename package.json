@@ -33,6 +33,7 @@
     "react-router-dom": "^7.9.1",
     "react-swiper": "^0.1.5",
     "sort-by": "^1.2.0",
+    "sweetalert2": "^11.23.0",
     "swiper": "^12.0.1",
     "tailwindcss": "^4.1.13"
   },

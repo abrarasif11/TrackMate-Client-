@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 import { format } from "date-fns";
 import { Eye, CreditCard, Trash2 } from "lucide-react";
+import Swal from "sweetalert2"; // SweetAlert2
+import "sweetalert2/dist/sweetalert2.min.css";
 
 const MyParcels = () => {
   const { user } = useAuth();
@@ -28,12 +30,42 @@ const MyParcels = () => {
   };
 
   const handleDelete = async (parcel) => {
-    if (!window.confirm("Are you sure you want to delete this parcel?")) return;
-    try {
-      await axiosSecure.delete(`/parcels/${parcel._id}`);
-      refetch();
-    } catch (error) {
-      console.error(error);
+    // SweetAlert2 confirmation
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: `Do you want to delete parcel "${parcel.parcelName}"?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#CAEB66",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+      background: "#000", // modal background black
+      color: "#fff", // text white
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await axiosSecure.delete(`/parcels/${parcel._id}`);
+        refetch();
+        Swal.fire({
+          title: "Deleted!",
+          text: `"${parcel.parcelName}" has been deleted.`,
+          icon: "success",
+          confirmButtonColor: "#CAEB66",
+          background: "#000",
+          color: "#fff",
+        });
+      } catch (error) {
+        console.error(error);
+        Swal.fire({
+          title: "Error!",
+          text: "Something went wrong while deleting the parcel.",
+          icon: "error",
+          confirmButtonColor: "#CAEB66",
+          background: "#000",
+          color: "#fff",
+        });
+      }
     }
   };
 
@@ -47,13 +79,16 @@ const MyParcels = () => {
           <thead className="bg-[#CAEB66]">
             <tr>
               <th className="px-6 py-3 text-left text-sm font-semibold text-black">
+                Title
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-black">
                 Parcel Type
               </th>
               <th className="px-6 py-3 text-left text-sm font-semibold text-black">
                 Cost
               </th>
               <th className="px-6 py-3 text-left text-sm font-semibold text-black">
-               Payment Status
+                Payment Status
               </th>
               <th className="px-6 py-3 text-left text-sm font-semibold text-black">
                 Created At
@@ -69,13 +104,9 @@ const MyParcels = () => {
                 key={parcel._id}
                 className="border-b hover:bg-[#CAEB66] transition"
               >
-                {/* Parcel Type */}
+                <td className="px-6 py-4 text-sm">{parcel.parcelName}</td>
                 <td className="px-6 py-4 text-sm">{parcel.parcelType}</td>
-
-                {/* Price */}
                 <td className="px-6 py-4 text-sm">{parcel.price} ৳</td>
-
-                {/* Status */}
                 <td className="px-6 py-4">
                   <span
                     className={`px-3 py-1 text-xs font-semibold rounded-full ${
@@ -87,23 +118,16 @@ const MyParcels = () => {
                     {parcel.status}
                   </span>
                 </td>
-
-                {/* CreatedAt */}
                 <td className="px-6 py-4 text-sm text-gray-700">
                   {format(new Date(parcel.createdAt), "PPpp")}
                 </td>
-
-                {/* Actions */}
                 <td className="px-6 py-4 flex justify-center gap-3">
-                  {/* View */}
                   <button
                     onClick={() => handleView(parcel)}
-                    className="text-black hover:text-[#CAEB66]"
+                    className="text-black hover:text-white"
                   >
                     <Eye className="w-5 h-5" />
                   </button>
-
-                  {/* Pay */}
                   {parcel.status.toLowerCase() !== "paid" && (
                     <button
                       onClick={() => handlePay(parcel)}
@@ -112,8 +136,6 @@ const MyParcels = () => {
                       <CreditCard className="w-5 h-5" />
                     </button>
                   )}
-
-                  {/* Delete */}
                   <button
                     onClick={() => handleDelete(parcel)}
                     className="text-black hover:text-red-600"
