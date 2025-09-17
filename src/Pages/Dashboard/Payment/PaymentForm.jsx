@@ -30,6 +30,8 @@ const PaymentForm = () => {
 
   // Safely get the amount (default to 0 if undefined)
   const amount = parcelInfo?.price || 0;
+  const amountInCents = amount * 100;
+  console.log(amountInCents);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,9 +50,32 @@ const PaymentForm = () => {
       setError(stripeError.message);
     } else {
       console.log("Payment Method", paymentMethod);
-      setError(""); // clear any previous error
-      // Here you can call your server to create a payment intent
-      // and confirm the payment if needed
+      setError("");
+      //  server to create a payment intent
+      const res = await axiosSecure.post("/create-payment-intent", {
+        amountInCents,
+        id,
+      });
+
+      const clientSecret = res.data.clientSecret;
+
+      const result = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: elements.getElement(CardElement),
+          billing_details: {
+            name: "Jerin",
+          },
+        },
+      });
+
+      if (result.error) {
+        console.log(result.error.message);
+      } else {
+        if (result.paymentIntent.status === "succeeded") {
+          console.log("Payment Successful");
+          console.log(result)
+        }
+      }
     }
   };
 
