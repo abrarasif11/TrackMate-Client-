@@ -6,10 +6,12 @@ import { format } from "date-fns";
 import { Eye, CreditCard, Trash2 } from "lucide-react";
 import Swal from "sweetalert2"; // SweetAlert2
 import "sweetalert2/dist/sweetalert2.min.css";
+import { useNavigate } from "react-router";
 
 const MyParcels = () => {
   const { user } = useAuth();
   const axiosSecure = useAxiosSecure();
+  const navigate = useNavigate()
   const [selectedParcel, setSelectedParcel] = useState(null);
 
   // Fetch parcels
@@ -21,12 +23,24 @@ const MyParcels = () => {
     },
   });
 
-  // Handlers
+  
   const handleView = (parcel) => setSelectedParcel(parcel);
 
-  const handlePay = async (parcel) => {
-    console.log("Pay Parcel:", parcel);
-    alert(`Redirecting to pay for ${parcel.parcelName}`);
+  const handlePay = async (id) => {
+    navigate(`/dashboard/payment/${id}`);
+    console.log("Pay Parcel ID:", id);
+    // Swal.fire({
+    //   title: "Redirecting to Payment",
+    //   text: `Proceed to pay for Parcel ID: ${id}`,
+    //   icon: "info",
+    //   confirmButtonColor: "#CAEB66",
+    //   background: "#000",
+    //   color: "#fff",
+    // });
+    // 👉 here you can redirect to payment page or API call
+    // e.g., navigate(`/payment/${id}`);
+
+
   };
 
   const handleDelete = async (parcel) => {
@@ -39,8 +53,8 @@ const MyParcels = () => {
       confirmButtonColor: "#CAEB66",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes, delete it!",
-      background: "#000", // modal background black
-      color: "#fff", // text white
+      background: "#000",
+      color: "#fff",
     });
 
     if (result.isConfirmed) {
@@ -130,7 +144,7 @@ const MyParcels = () => {
                   </button>
                   {parcel.status.toLowerCase() !== "paid" && (
                     <button
-                      onClick={() => handlePay(parcel)}
+                      onClick={() => handlePay(parcel._id)} 
                       className="text-[#CAEB66] hover:text-black"
                     >
                       <CreditCard className="w-5 h-5" />

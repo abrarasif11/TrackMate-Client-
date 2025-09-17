@@ -128,7 +128,7 @@ const Register = () => {
       {/* Register */}
       <p className="text-sm text-center text-gray-600">
         Already have an account?{" "}
-        <Link to="/login" className="text-[#A0C948] font-medium">
+        <Link to="/signIn" className="text-[#A0C948] font-medium">
           Login
         </Link>
       </p>

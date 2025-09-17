@@ -1,7 +1,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router";
-import useAuth from "../../../Hooks/useAuth";
+import { Link, useLocation, useNavigate } from "react-router";
+import useAuth from "../../../hooks/useAuth";
 
 const Login = () => {
   const {
@@ -10,21 +10,32 @@ const Login = () => {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
-    console.log(data);
-  };
+  const { signInWithGoogle, signIn } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const from = location.state?.from || "/";
 
-  const { signInWithGoogle } = useAuth();
+  // onSubmit function
+  const onSubmit = (data) => {
+    signIn(data.email, data.password)
+      .then((res) => {
+        console.log(res.user);
+        navigate(from);
+      })
+      .catch((err) => console.log(err));
+  };
 
   const handleGoogleSignIn = () => {
     signInWithGoogle()
       .then((res) => {
         console.log(res.user);
+        navigate(from);
       })
       .catch((err) => {
         console.log(err);
       });
   };
+
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
@@ -78,8 +89,8 @@ const Login = () => {
         )}
         {errors.password?.type === "pattern" && (
           <p className="text-red-700 mt-2">
-            Password must be uppercase, lowercase, number, special char, min 6
-            character
+            Password must include uppercase, lowercase, number, special
+            character, and be at least 6 characters long
           </p>
         )}
         <div className="mt-2">
@@ -91,7 +102,6 @@ const Login = () => {
 
       {/* Login Button */}
       <button
-        
         type="submit"
         className="w-full py-3 bg-[#CAEB66] text-black font-medium rounded-md hover:bg-[#b8d95b] transition"
       >
@@ -115,7 +125,7 @@ const Login = () => {
 
       {/* Google Login */}
       <button
-      onClick={handleGoogleSignIn}
+        onClick={handleGoogleSignIn}
         type="button"
         className="w-full flex items-center justify-center gap-3 border rounded-md py-3 bg-gray-100 hover:bg-gray-200 transition"
       >

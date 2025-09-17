@@ -4,7 +4,13 @@ import TrackMateLogo from "../TrackMateLogo/TrackMateLogo";
 import useAuth from "../../hooks/useAuth";
 
 const Navbar = () => {
-  const { user } = useAuth();
+  const { user, logOut } = useAuth();
+
+  const handleLogOut = () => {
+    logOut()
+      .then((res) => console.log(res))
+      .catch((err) => console.log(err));
+  };
   const links = (
     <>
       <li>
@@ -70,12 +76,17 @@ const Navbar = () => {
         {/* <Link className="mr-3 underline text-[#4167F0]" to="/register">
           Register
         </Link> */}
-        <Link to="/signin">
-          <button className="btn bg-[#CAEB66] text-black">Log In</button>
-        </Link>
-        <Link to="/signin">
-          {/* <button className="btn bg-[#CAEB66] ml-2 text-black">Log In</button> */}
-        </Link>
+        {user ? (
+          <button onClick={handleLogOut} className="btn bg-[#CAEB66] text-black">Log Out</button>
+        ) : (
+          <Link to="/signin">
+            <button className="btn bg-[#CAEB66] text-black">Log In</button>
+          </Link>
+        )}
+
+        {/* <Link to="/signin">
+          <button className="btn bg-[#CAEB66] ml-2 text-black">Log In</button>
+        </Link> */}
       </div>
     </div>
   );
