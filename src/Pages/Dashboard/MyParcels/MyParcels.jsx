@@ -1,11 +1,181 @@
-import React from 'react'
+import React, { useState } from "react";
+import useAuth from "../../../hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
+import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import { format } from "date-fns";
+import { Eye, CreditCard, Trash2 } from "lucide-react";
 
 const MyParcels = () => {
-  return (
-    <div>
-      <p>My Parcels are coming ....</p>
-    </div>
-  )
-}
+  const { user } = useAuth();
+  const axiosSecure = useAxiosSecure();
+  const [selectedParcel, setSelectedParcel] = useState(null);
 
-export default MyParcels
+  // Fetch parcels
+  const { data: parcels = [], refetch } = useQuery({
+    queryKey: ["my-parcels", user?.email],
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/parcels?email=${user.email}`);
+      return res.data;
+    },
+  });
+
+  // Handlers
+  const handleView = (parcel) => setSelectedParcel(parcel);
+
+  const handlePay = async (parcel) => {
+    console.log("Pay Parcel:", parcel);
+    alert(`Redirecting to pay for ${parcel.parcelName}`);
+  };
+
+  const handleDelete = async (parcel) => {
+    if (!window.confirm("Are you sure you want to delete this parcel?")) return;
+    try {
+      await axiosSecure.delete(`/parcels/${parcel._id}`);
+      refetch();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return (
+    <div className="p-6 bg-black min-h-screen text-black">
+      <h2 className="text-3xl font-bold mb-6 text-[#CAEB66]">My Parcels</h2>
+
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white shadow-lg rounded-lg overflow-hidden">
+          <thead className="bg-[#CAEB66]">
+            <tr>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-black">
+                Parcel Type
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-black">
+                Cost
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-black">
+               Payment Status
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-black">
+                Created At
+              </th>
+              <th className="px-6 py-3 text-center text-sm font-semibold text-black">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {parcels.map((parcel) => (
+              <tr
+                key={parcel._id}
+                className="border-b hover:bg-[#CAEB66] transition"
+              >
+                {/* Parcel Type */}
+                <td className="px-6 py-4 text-sm">{parcel.parcelType}</td>
+
+                {/* Price */}
+                <td className="px-6 py-4 text-sm">{parcel.price} ৳</td>
+
+                {/* Status */}
+                <td className="px-6 py-4">
+                  <span
+                    className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                      parcel.status.toLowerCase() === "paid"
+                        ? "bg-[#CAEB66] text-black"
+                        : "bg-black text-white"
+                    }`}
+                  >
+                    {parcel.status}
+                  </span>
+                </td>
+
+                {/* CreatedAt */}
+                <td className="px-6 py-4 text-sm text-gray-700">
+                  {format(new Date(parcel.createdAt), "PPpp")}
+                </td>
+
+                {/* Actions */}
+                <td className="px-6 py-4 flex justify-center gap-3">
+                  {/* View */}
+                  <button
+                    onClick={() => handleView(parcel)}
+                    className="text-black hover:text-[#CAEB66]"
+                  >
+                    <Eye className="w-5 h-5" />
+                  </button>
+
+                  {/* Pay */}
+                  {parcel.status.toLowerCase() !== "paid" && (
+                    <button
+                      onClick={() => handlePay(parcel)}
+                      className="text-[#CAEB66] hover:text-black"
+                    >
+                      <CreditCard className="w-5 h-5" />
+                    </button>
+                  )}
+
+                  {/* Delete */}
+                  <button
+                    onClick={() => handleDelete(parcel)}
+                    className="text-black hover:text-red-600"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* View Modal */}
+      {selectedParcel && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-lg">
+            <h3 className="text-2xl font-bold mb-4 text-[#CAEB66]">
+              Parcel Details
+            </h3>
+            <p>
+              <strong>Name:</strong> {selectedParcel.parcelName}
+            </p>
+            <p>
+              <strong>Weight:</strong> {selectedParcel.parcelWeight} KG
+            </p>
+            <p>
+              <strong>Sender:</strong> {selectedParcel.senderName} (
+              {selectedParcel.senderRegion})
+            </p>
+            <p>
+              <strong>Receiver:</strong> {selectedParcel.receiverName} (
+              {selectedParcel.receiverRegion})
+            </p>
+            <p>
+              <strong>Status:</strong>{" "}
+              <span
+                className={`px-2 py-1 rounded-full font-semibold ${
+                  selectedParcel.status.toLowerCase() === "paid"
+                    ? "bg-[#CAEB66] text-black"
+                    : "bg-black text-white"
+                }`}
+              >
+                {selectedParcel.status}
+              </span>
+            </p>
+            <p>
+              <strong>Price:</strong> {selectedParcel.price} ৳
+            </p>
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                className="px-4 py-2 bg-[#CAEB66] text-black rounded-lg hover:bg-black hover:text-[#CAEB66] transition"
+                onClick={() => setSelectedParcel(null)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default MyParcels;
