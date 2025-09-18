@@ -4,9 +4,11 @@ import React, { useState } from "react";
 import { useParams } from "react-router";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 import Loader from "../../../Shared/Loader/Loader";
+import useAuth from "../../../hooks/useAuth";
 
 const PaymentForm = () => {
   const { id } = useParams();
+  const { user } = useAuth()
   const axiosSecure = useAxiosSecure();
   const stripe = useStripe();
   const elements = useElements();
@@ -63,7 +65,8 @@ const PaymentForm = () => {
         payment_method: {
           card: elements.getElement(CardElement),
           billing_details: {
-            name: "Jerin",
+            name: user.displayName,
+            email: user.email
           },
         },
       });
@@ -74,6 +77,9 @@ const PaymentForm = () => {
         if (result.paymentIntent.status === "succeeded") {
           console.log("Payment Successful");
           console.log(result)
+
+        // mark parcel paid create payment history
+
         }
       }
     }
