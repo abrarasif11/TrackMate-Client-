@@ -13,8 +13,9 @@ const PaymentForm = () => {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  // ✅ Fetch parcel safely
+  // Fetch parcel safely
   const {
     isPending,
     isError,
@@ -25,12 +26,9 @@ const PaymentForm = () => {
     queryFn: async () => {
       try {
         const res = await axiosSecure.get(`/parcels/${id}`);
-        return res.data || null; // ensure not undefined
+        return res.data || null;
       } catch (err) {
-        // if backend returns 404 → return null
-        if (err.response?.status === 404) {
-          return null;
-        }
+        if (err.response?.status === 404) return null;
         throw err;
       }
     },
@@ -43,7 +41,7 @@ const PaymentForm = () => {
 
   console.log("Parcel Data:", parcelInfo);
 
-  // ✅ Safely get price
+  // Safely get price
   const amount = parcelInfo?.price ?? 0;
   const amountInCents = amount * 100;
 
@@ -54,6 +52,7 @@ const PaymentForm = () => {
     const card = elements.getElement(CardElement);
     if (!card) return;
 
+    //  Create Stripe Payment Method
     const { error: stripeError, paymentMethod } =
       await stripe.createPaymentMethod({
         type: "card",
@@ -66,18 +65,19 @@ const PaymentForm = () => {
     }
 
     setError("");
+    setSuccess("");
     console.log("Payment Method:", paymentMethod);
 
     try {
-      // 1️⃣ Create payment intent
+      // Create Payment Intent from backend
       const res = await axiosSecure.post("/create-payment-intent", {
         amountInCents,
-        id,
+        id, // send parcel ID so backend can use if needed
       });
 
       const clientSecret = res.data.clientSecret;
 
-      // 2️⃣ Confirm payment
+      //  Confirm payment with Stripe
       const result = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card,
@@ -95,19 +95,22 @@ const PaymentForm = () => {
         console.log(" Payment Successful");
         console.log(result);
 
-        // 3️⃣ Save payment history
+        // Save payment to backend (update parcel + history)
         const paymentData = {
-          id,
-          email: user.email,
+          parcelId: id,
+          paymentIntentId: result.paymentIntent.id,
           amount,
-          transactionId: result.paymentIntent.id,
-          paymentMethod: result.paymentIntent.payment_method_types,
+          createdBy: user.email,
         };
 
-        const paymentRes = await axiosSecure.post("/payments", paymentData);
+        const confirmRes = await axiosSecure.post(
+          "/confirm-payment",
+          paymentData
+        );
 
-        if (paymentRes.data.insertedId) {
-          console.log("💰 Payment saved successfully in DB");
+        if (confirmRes.data?._id) {
+          setSuccess("🎉 Payment successful and saved!");
+          console.log("💰 Payment saved:", confirmRes.data);
         }
       }
     } catch (err) {
@@ -126,7 +129,9 @@ const PaymentForm = () => {
       >
         Pay ৳{amount}
       </button>
+
       {error && <p className="text-red-600 mt-4">{error}</p>}
+      {success && <p className="text-green-600 mt-4">{success}</p>}
     </form>
   );
 };
