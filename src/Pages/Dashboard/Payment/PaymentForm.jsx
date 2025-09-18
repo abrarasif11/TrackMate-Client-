@@ -8,32 +8,44 @@ import useAuth from "../../../hooks/useAuth";
 
 const PaymentForm = () => {
   const { id } = useParams();
-  const { user } = useAuth()
+  const { user } = useAuth();
   const axiosSecure = useAxiosSecure();
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState("");
 
-  // Fetch parcel data
-  const { isLoading, data: parcelInfo = {} } = useQuery({
+  // ✅ Fetch parcel safely
+  const {
+    isPending,
+    isError,
+    error: queryError,
+    data: parcelInfo,
+  } = useQuery({
     queryKey: ["parcels", id],
     queryFn: async () => {
-      const res = await axiosSecure.get(`parcels/${id}`);
-      // Access the nested `data` field from your API response
-      return res.data.data;
+      try {
+        const res = await axiosSecure.get(`/parcels/${id}`);
+        return res.data || null; // ensure not undefined
+      } catch (err) {
+        // if backend returns 404 → return null
+        if (err.response?.status === 404) {
+          return null;
+        }
+        throw err;
+      }
     },
   });
 
-  if (isLoading) {
-    return <Loader />;
-  }
+  if (isPending) return <Loader />;
+  if (isError)
+    return <p className="text-red-500">Error: {queryError.message}</p>;
+  if (!parcelInfo) return <p className="text-red-500">Parcel not found.</p>;
 
   console.log("Parcel Data:", parcelInfo);
 
-  // Safely get the amount (default to 0 if undefined)
-  const amount = parcelInfo?.price || 0;
+  // ✅ Safely get price
+  const amount = parcelInfo?.price ?? 0;
   const amountInCents = amount * 100;
-  console.log(amountInCents);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,10 +62,14 @@ const PaymentForm = () => {
 
     if (stripeError) {
       setError(stripeError.message);
-    } else {
-      console.log("Payment Method", paymentMethod);
-      setError("");
-      //  server to create a payment intent
+      return;
+    }
+
+    setError("");
+    console.log("Payment Method:", paymentMethod);
+
+    try {
+      // 1️⃣ Create payment intent
       const res = await axiosSecure.post("/create-payment-intent", {
         amountInCents,
         id,
@@ -61,27 +77,42 @@ const PaymentForm = () => {
 
       const clientSecret = res.data.clientSecret;
 
+      // 2️⃣ Confirm payment
       const result = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
-          card: elements.getElement(CardElement),
+          card,
           billing_details: {
-            name: user.displayName,
-            email: user.email
+            name: user.displayName || "Anonymous",
+            email: user.email,
           },
         },
       });
 
       if (result.error) {
-        console.log(result.error.message);
-      } else {
-        if (result.paymentIntent.status === "succeeded") {
-          console.log("Payment Successful");
-          console.log(result)
+        console.log("Payment error:", result.error.message);
+        setError(result.error.message);
+      } else if (result.paymentIntent.status === "succeeded") {
+        console.log(" Payment Successful");
+        console.log(result);
 
-        // mark parcel paid create payment history
+        // 3️⃣ Save payment history
+        const paymentData = {
+          id,
+          email: user.email,
+          amount,
+          transactionId: result.paymentIntent.id,
+          paymentMethod: result.paymentIntent.payment_method_types,
+        };
 
+        const paymentRes = await axiosSecure.post("/payments", paymentData);
+
+        if (paymentRes.data.insertedId) {
+          console.log("💰 Payment saved successfully in DB");
         }
       }
+    } catch (err) {
+      console.error("Payment failed:", err.message);
+      setError("Something went wrong. Please try again.");
     }
   };
 
