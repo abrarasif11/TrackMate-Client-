@@ -33,7 +33,6 @@ const DashboardLayout = () => {
           </div>
           <div className="mx-2 lg:hidden flex-1 px-2">Dashboard</div>
         </div>
-
         {/* Page content here */}
         <Outlet />
         {/* Page content here */}
@@ -76,7 +75,6 @@ const DashboardLayout = () => {
               My Payment History
             </NavLink>
           </li>
-
           <li>
             <NavLink
               to="/dashboard/track"
@@ -87,7 +85,7 @@ const DashboardLayout = () => {
               }
             >
               <FiMapPin className="w-5 h-5" />
-              Track A Package
+              Track Your Parcel
             </NavLink>
           </li>
 
