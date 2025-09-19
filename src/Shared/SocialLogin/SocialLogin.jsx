@@ -1,13 +1,33 @@
 import React from "react";
 import useAuth from "../../hooks/useAuth";
+import useAxios from "../../Hooks/useAxios";
 
 const SocialLogin = () => {
   const { signInWithGoogle } = useAuth();
+  const axiosInstance = useAxios();
 
-  const handleGoogleSignIn = () => {
-    signInWithGoogle()
-      .then((res) => console.log("Google SignIn User:", res.user))
-      .catch((err) => console.log("Google SignIn Error:", err));
+  const handleGoogleSignIn = async () => {
+    try {
+      const res = await signInWithGoogle();
+      const user = res.user;
+      console.log("Google SignIn User:", user);
+
+      const userInfo = {
+        _id: user.uid,
+        email: user.email,
+        name: user.displayName || "",
+        image: user.photoURL || null,
+        role: "user", // default
+        createdAt: new Date().toISOString(),
+        last_log_in: new Date().toISOString(),
+      };
+
+      // Send to your MongoDB backend
+      const response = await axiosInstance.post("/users", userInfo);
+      console.log("User saved in DB:", response.data);
+    } catch (err) {
+      console.log("Google SignIn Error:", err);
+    }
   };
 
   return (
