@@ -1,9 +1,12 @@
-import React, {  } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import useAuth from "../../../hooks/useAuth";
+import Swal from "sweetalert2";
+import { updateProfile } from "firebase/auth";
 
 const Register = () => {
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -11,67 +14,99 @@ const Register = () => {
   } = useForm();
 
   const { signInWithGoogle, createUser } = useAuth();
-
-  // // For previewing the selected image
-  // const [preview, setPreview] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   const handleGoogleSignIn = () => {
     signInWithGoogle()
-      .then((res) => {
-        console.log(res.user);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+      .then((res) => console.log("Google SignIn User:", res.user))
+      .catch((err) => console.log("Google SignIn Error:", err));
   };
 
-  const onSubmit = (data) => {
-    console.log("Form data:", data);
+  const onSubmit = async (data) => {
+    try {
+      setUploading(true);
+      let imageUrl = "";
 
-    // If you want to handle file upload to a server / firebase:
-    if (data.image && data.image[0]) {
-      const file = data.image[0];
-      console.log("Uploaded file:", file);
-      // TODO: upload to storage (Firebase/ImgBB/Cloudinary)
-    }
+      // Upload image to ImgBB
+      if (data.image && data.image[0]) {
+        const file = data.image[0];
+        const formData = new FormData();
+        formData.append("image", file);
 
-    createUser(data.email, data.password)
-      .then((res) => {
-        console.log(res.user);
-      })
-      .catch((err) => {
-        console.log(err);
+        const res = await fetch(
+          `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_image_upload_key}`,
+          { method: "POST", body: formData }
+        );
+
+        const imgData = await res.json();
+        if (imgData.success) {
+          imageUrl = imgData.data.url; // ImgBB URL
+          console.log("Image uploaded to ImgBB:", imageUrl);
+        } else {
+          console.error("ImgBB Upload Failed:", imgData);
+        }
+      }
+
+      // Create user in Firebase
+      const userRes = await createUser(data.email, data.password);
+      console.log("Firebase user created:", userRes.user);
+
+      // Update displayName and photoURL in Firebase
+      await updateProfile(userRes.user, {
+        displayName: data.name,
+        photoURL: imageUrl || null,
       });
+
+      console.log(
+        "Updated Firebase profile:",
+        userRes.user.displayName,
+        userRes.user.photoURL
+      );
+
+      setUploading(false);
+
+      // Show SweetAlert2
+      Swal.fire({
+        title: "Registration Successful!",
+        html: `
+          <p><strong>Name:</strong> ${userRes.user.displayName}</p>
+          <p><strong>Email:</strong> ${userRes.user.email}</p>
+          ${
+            imageUrl
+              ? `<p><strong>Image URL:</strong> <a href="${imageUrl}" target="_blank">${imageUrl}</a></p>
+                 <img src="${imageUrl}" alt="Profile" class="w-20 h-20 rounded-full mt-2"/>`
+              : ""
+          }
+        `,
+        icon: "success",
+        confirmButtonText: "OK",
+      }).then(() => {
+        navigate("/signIn"); // Redirect after alert
+      });
+    } catch (error) {
+      console.error("Error during registration:", error);
+      setUploading(false);
+      Swal.fire({
+        title: "Error!",
+        text: "Something went wrong during registration.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="w-full max-w-md space-y-6"
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-md space-y-6">
       {/* Title */}
       <div>
-        <h1 className="text-5xl mb-2 font-bold text-gray-900">
-          Create an Account
-        </h1>
+        <h1 className="text-5xl mb-2 font-bold text-gray-900">Create an Account</h1>
         <p className="text-gray-600">Register with TrackMate</p>
       </div>
-      {/* Preview
-      {preview && (
-        <div className="mt-3">
-          <img
-            src={preview}
-            alt="Preview"
-            className="w-20 h-20 object-cover rounded-full border"
-          />
-        </div>
-      )} */}
-      {/* Profile Image Upload */}
+
+      {/* Profile Image */}
       <div>
-        <label
-          htmlFor="image"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="image" className="block text-sm font-medium text-gray-700">
           Profile Image
         </label>
         <input
@@ -79,21 +114,25 @@ const Register = () => {
           accept="image/*"
           {...register("image")}
           id="image"
-          // onChange={(e) =>
-          //   setPreview(
-          //     e.target.files[0] ? URL.createObjectURL(e.target.files[0]) : null
-          //   )
-          // }
+          onChange={(e) =>
+            setPreview(e.target.files[0] ? URL.createObjectURL(e.target.files[0]) : null)
+          }
           className="w-full mt-1 px-3 py-2 border rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#CAEB66]"
         />
+        {preview && (
+          <div className="mt-3">
+            <img
+              src={preview}
+              alt="Preview"
+              className="w-20 h-20 object-cover rounded-full border"
+            />
+          </div>
+        )}
       </div>
 
       {/* Name */}
       <div>
-        <label
-          htmlFor="name"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
           Name
         </label>
         <input
@@ -108,10 +147,7 @@ const Register = () => {
 
       {/* Email */}
       <div>
-        <label
-          htmlFor="email"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
           Email
         </label>
         <input
@@ -126,10 +162,7 @@ const Register = () => {
 
       {/* Password */}
       <div>
-        <label
-          htmlFor="password"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
           Password
         </label>
         <input
@@ -148,26 +181,21 @@ const Register = () => {
         )}
         {errors.password?.type === "pattern" && (
           <p className="text-red-700 mt-2">
-            Password must be uppercase, lowercase, number, special char, min 6
-            characters
+            Password must be uppercase, lowercase, number, special char, min 6 characters
           </p>
         )}
-        <div className="mt-2">
-          <a href="#" className="text-sm text-gray-500 hover:text-[#A0C948]">
-            Forget Password?
-          </a>
-        </div>
       </div>
 
       {/* Register Button */}
       <button
         type="submit"
+        disabled={uploading}
         className="w-full py-3 bg-[#CAEB66] text-black font-medium rounded-md hover:bg-[#b8d95b] transition"
       >
-        Register
+        {uploading ? "Registering..." : "Register"}
       </button>
 
-      {/* Already have an account */}
+      {/* Already have account */}
       <p className="text-sm text-center text-gray-600">
         Already have an account?{" "}
         <Link to="/signIn" className="text-[#A0C948] font-medium">
