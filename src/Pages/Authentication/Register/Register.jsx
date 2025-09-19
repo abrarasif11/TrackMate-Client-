@@ -5,6 +5,7 @@ import useAuth from "../../../hooks/useAuth";
 import Swal from "sweetalert2";
 import { updateProfile } from "firebase/auth";
 import useAxios from "../../../Hooks/useAxios";
+import SocialLogin from "../../../Shared/SocialLogin/SocialLogin";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -13,17 +14,11 @@ const Register = () => {
     handleSubmit,
     formState: { errors },
   } = useForm();
-  
+
   const axiosInstance = useAxios();
-  const { signInWithGoogle, createUser } = useAuth();
+  const { createUser } = useAuth();
   const [preview, setPreview] = useState(null);
   const [uploading, setUploading] = useState(false);
-
-  const handleGoogleSignIn = () => {
-    signInWithGoogle()
-      .then((res) => console.log("Google SignIn User:", res.user))
-      .catch((err) => console.log("Google SignIn Error:", err));
-  };
 
   const onSubmit = async (data) => {
     try {
@@ -55,17 +50,17 @@ const Register = () => {
       // Create user in Firebase
       const userRes = await createUser(data.email, data.password);
       console.log("Firebase user created:", userRes.user);
-  
-     // update user info on DB 
-     const userInfo = {
-      email: data.email,
-      role : 'user', // default
-      createdAt : new Date().toISOString(),
-      last_log_in : new Date().toISOString()
-     }
-    
-     const userR = await axiosInstance.post('/users', userInfo)
-     console.log(userR.data);
+
+      // update user info on DB
+      const userInfo = {
+        email: data.email,
+        role: "user", // default
+        createdAt: new Date().toISOString(),
+        last_log_in: new Date().toISOString(),
+      };
+
+      const userR = await axiosInstance.post("/users", userInfo);
+      console.log(userR.data);
 
       // Update displayName and photoURL in Firebase
       await updateProfile(userRes.user, {
@@ -248,18 +243,7 @@ const Register = () => {
       </div>
 
       {/* Google Login */}
-      <button
-        onClick={handleGoogleSignIn}
-        type="button"
-        className="w-full flex items-center justify-center gap-3 border rounded-md py-3 bg-gray-100 hover:bg-gray-200 transition"
-      >
-        <img
-          src="https://www.svgrepo.com/show/355037/google.svg"
-          alt="Google"
-          className="w-5 h-5"
-        />
-        <span className="text-gray-700 font-medium">Login with Google</span>
-      </button>
+      <SocialLogin />
     </form>
   );
 };
