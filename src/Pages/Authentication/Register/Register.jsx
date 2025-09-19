@@ -53,6 +53,15 @@ const Register = () => {
       // Create user in Firebase
       const userRes = await createUser(data.email, data.password);
       console.log("Firebase user created:", userRes.user);
+  
+     // update user info on DB 
+     const userInfo = {
+      email: data?.email,
+      role : 'user', // default
+      createdAt : new Date().toISOString()
+     }
+    
+
 
       // Update displayName and photoURL in Firebase
       await updateProfile(userRes.user, {
