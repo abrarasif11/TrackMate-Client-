@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router";
 import useAuth from "../../../hooks/useAuth";
 import Swal from "sweetalert2";
 import { updateProfile } from "firebase/auth";
+import useAxios from "../../../Hooks/useAxios";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -12,7 +13,8 @@ const Register = () => {
     handleSubmit,
     formState: { errors },
   } = useForm();
-
+  
+  const axiosInstance = useAxios();
   const { signInWithGoogle, createUser } = useAuth();
   const [preview, setPreview] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -56,13 +58,14 @@ const Register = () => {
   
      // update user info on DB 
      const userInfo = {
-      email: data?.email,
+      email: data.email,
       role : 'user', // default
       createdAt : new Date().toISOString(),
       last_log_in : new Date().toISOString()
      }
     
-
+     const userR = await axiosInstance.post('/users', userInfo)
+     console.log(userR.data);
 
       // Update displayName and photoURL in Firebase
       await updateProfile(userRes.user, {
