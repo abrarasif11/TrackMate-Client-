@@ -1,7 +1,7 @@
-import React from "react";
+import React, {  } from "react";
 import { useForm } from "react-hook-form";
-import useAuth from "../../../Hooks/useAuth";
 import { Link } from "react-router";
+import useAuth from "../../../hooks/useAuth";
 
 const Register = () => {
   const {
@@ -10,7 +10,10 @@ const Register = () => {
     formState: { errors },
   } = useForm();
 
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle, createUser } = useAuth();
+
+  // // For previewing the selected image
+  // const [preview, setPreview] = useState(null);
 
   const handleGoogleSignIn = () => {
     signInWithGoogle()
@@ -22,10 +25,16 @@ const Register = () => {
       });
   };
 
-  const { createUser } = useAuth();
-
   const onSubmit = (data) => {
-    console.log(data);
+    console.log("Form data:", data);
+
+    // If you want to handle file upload to a server / firebase:
+    if (data.image && data.image[0]) {
+      const file = data.image[0];
+      console.log("Uploaded file:", file);
+      // TODO: upload to storage (Firebase/ImgBB/Cloudinary)
+    }
+
     createUser(data.email, data.password)
       .then((res) => {
         console.log(res.user);
@@ -34,6 +43,7 @@ const Register = () => {
         console.log(err);
       });
   };
+
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
@@ -46,8 +56,39 @@ const Register = () => {
         </h1>
         <p className="text-gray-600">Register with TrackMate</p>
       </div>
+      {/* Preview
+      {preview && (
+        <div className="mt-3">
+          <img
+            src={preview}
+            alt="Preview"
+            className="w-20 h-20 object-cover rounded-full border"
+          />
+        </div>
+      )} */}
+      {/* Profile Image Upload */}
+      <div>
+        <label
+          htmlFor="image"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Profile Image
+        </label>
+        <input
+          type="file"
+          accept="image/*"
+          {...register("image")}
+          id="image"
+          // onChange={(e) =>
+          //   setPreview(
+          //     e.target.files[0] ? URL.createObjectURL(e.target.files[0]) : null
+          //   )
+          // }
+          className="w-full mt-1 px-3 py-2 border rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#CAEB66]"
+        />
+      </div>
 
-      {/* name */}
+      {/* Name */}
       <div>
         <label
           htmlFor="name"
@@ -56,7 +97,7 @@ const Register = () => {
           Name
         </label>
         <input
-          type="name"
+          type="text"
           required
           {...register("name")}
           id="name"
@@ -64,6 +105,7 @@ const Register = () => {
           className="w-full mt-1 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CAEB66]"
         />
       </div>
+
       {/* Email */}
       <div>
         <label
@@ -107,7 +149,7 @@ const Register = () => {
         {errors.password?.type === "pattern" && (
           <p className="text-red-700 mt-2">
             Password must be uppercase, lowercase, number, special char, min 6
-            character
+            characters
           </p>
         )}
         <div className="mt-2">
@@ -117,7 +159,7 @@ const Register = () => {
         </div>
       </div>
 
-      {/* register Button */}
+      {/* Register Button */}
       <button
         type="submit"
         className="w-full py-3 bg-[#CAEB66] text-black font-medium rounded-md hover:bg-[#b8d95b] transition"
@@ -125,7 +167,7 @@ const Register = () => {
         Register
       </button>
 
-      {/* Register */}
+      {/* Already have an account */}
       <p className="text-sm text-center text-gray-600">
         Already have an account?{" "}
         <Link to="/signIn" className="text-[#A0C948] font-medium">
