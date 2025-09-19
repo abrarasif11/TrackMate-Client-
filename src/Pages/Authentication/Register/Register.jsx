@@ -35,7 +35,9 @@ const Register = () => {
         formData.append("image", file);
 
         const res = await fetch(
-          `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_image_upload_key}`,
+          `https://api.imgbb.com/1/upload?key=${
+            import.meta.env.VITE_image_upload_key
+          }`,
           { method: "POST", body: formData }
         );
 
@@ -82,7 +84,7 @@ const Register = () => {
         icon: "success",
         confirmButtonText: "OK",
       }).then(() => {
-        navigate("/signIn"); // Redirect after alert
+        navigate("/signIn");
       });
     } catch (error) {
       console.error("Error during registration:", error);
@@ -97,16 +99,35 @@ const Register = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-md space-y-6">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="w-full max-w-md space-y-6"
+    >
       {/* Title */}
       <div>
-        <h1 className="text-5xl mb-2 font-bold text-gray-900">Create an Account</h1>
+        <h1 className="text-5xl mb-2 font-bold text-gray-900">
+          Create an Account
+        </h1>
         <p className="text-gray-600">Register with TrackMate</p>
       </div>
 
+      {/* Preview Image */}
+      {preview && (
+        <div className="mt-3">
+          <img
+            src={preview}
+            alt="Preview"
+            className="w-20 h-20 object-cover rounded-full border"
+          />
+        </div>
+      )}
+
       {/* Profile Image */}
       <div>
-        <label htmlFor="image" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="image"
+          className="block text-sm font-medium text-gray-700"
+        >
           Profile Image
         </label>
         <input
@@ -115,24 +136,20 @@ const Register = () => {
           {...register("image")}
           id="image"
           onChange={(e) =>
-            setPreview(e.target.files[0] ? URL.createObjectURL(e.target.files[0]) : null)
+            setPreview(
+              e.target.files[0] ? URL.createObjectURL(e.target.files[0]) : null
+            )
           }
           className="w-full mt-1 px-3 py-2 border rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#CAEB66]"
         />
-        {preview && (
-          <div className="mt-3">
-            <img
-              src={preview}
-              alt="Preview"
-              className="w-20 h-20 object-cover rounded-full border"
-            />
-          </div>
-        )}
       </div>
 
       {/* Name */}
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="name"
+          className="block text-sm font-medium text-gray-700"
+        >
           Name
         </label>
         <input
@@ -147,7 +164,10 @@ const Register = () => {
 
       {/* Email */}
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="email"
+          className="block text-sm font-medium text-gray-700"
+        >
           Email
         </label>
         <input
@@ -162,7 +182,10 @@ const Register = () => {
 
       {/* Password */}
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="password"
+          className="block text-sm font-medium text-gray-700"
+        >
           Password
         </label>
         <input
@@ -181,7 +204,8 @@ const Register = () => {
         )}
         {errors.password?.type === "pattern" && (
           <p className="text-red-700 mt-2">
-            Password must be uppercase, lowercase, number, special char, min 6 characters
+            Password must be uppercase, lowercase, number, special char, min 6
+            characters
           </p>
         )}
       </div>

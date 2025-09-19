@@ -5,7 +5,7 @@ function App() {
 
   return (
     <>
-      <h2 className='text-center text-4xl'>Track Mate</h2>
+      <h2 className='text-center text-4xl'></h2>
     </>
   )
 }
