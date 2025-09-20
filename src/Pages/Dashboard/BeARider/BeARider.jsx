@@ -1,22 +1,63 @@
 import React from "react";
 import { useForm } from "react-hook-form";
-import rider from '../../../assets/assests/agent-pending.png'
+import rider from "../../../assets/assests/agent-pending.png";
+import { useLoaderData } from "react-router";
+import Swal from "sweetalert2";
+import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 
 const BeARider = () => {
+  const serviceCenter = useLoaderData();
+  const axiosSecure = useAxiosSecure();
+
   const {
     register,
     handleSubmit,
+    // reset,
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     console.log("Form Data:", data);
+
+    try {
+      //  POST form data to backend
+      const res = await axiosSecure.post("/riders", data);
+      console.log("MongoDB Response:", res.data.insertedId);
+
+      //  Show SweetAlert2 only after successful submission
+      Swal.fire({
+        title: "Application Submitted!",
+        html: `
+          <strong>Name:</strong> ${data.name} <br/>
+          <strong>Age:</strong> ${data.age} <br/>
+          <strong>Email:</strong> ${data.email} <br/>
+          <strong>Region:</strong> ${data.region} <br/>
+          <strong>NID:</strong> ${data.nid} <br/>
+          <strong>Contact:</strong> ${data.contact} <br/>
+          <strong>Warehouse:</strong> ${data.warehouse}
+        `,
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+
+      // reset();
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      Swal.fire({
+        title: "Submission Failed",
+        text: "Please try again later.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    }
   };
+
+  // Extract unique regions from serviceCenter
+  const uniqueRegions = [...new Set(serviceCenter?.map((item) => item.region))];
 
   return (
     <div className="mt-10 min-h-screen flex flex-col items-center py-10">
       <div className="max-w-6xl w-full bg-white shadow-md rounded-2xl p-10">
-        {/* Header */}
         <h1 className="text-4xl font-bold text-gray-800 mb-4">Be a Rider</h1>
         <p className="text-gray-500 mb-8 max-w-3xl">
           Enjoy fast, reliable parcel delivery with real-time tracking and zero
@@ -27,7 +68,6 @@ const BeARider = () => {
         <hr className="my-6" />
 
         <div className="grid md:grid-cols-2 gap-10 items-center">
-          {/* Form Section */}
           <div>
             <h2 className="text-xl font-semibold text-gray-800 mb-6">
               Tell us about yourself
@@ -95,9 +135,11 @@ const BeARider = () => {
                     className="select select-bordered w-full"
                   >
                     <option value="">Select your region</option>
-                    <option value="dhaka">Dhaka</option>
-                    <option value="chittagong">Chittagong</option>
-                    <option value="rajshahi">Rajshahi</option>
+                    {uniqueRegions.map((region, idx) => (
+                      <option key={idx} value={region}>
+                        {region}
+                      </option>
+                    ))}
                   </select>
                   {errors.region && (
                     <p className="text-red-500 text-sm mt-1">
@@ -151,9 +193,11 @@ const BeARider = () => {
                   className="select select-bordered w-full"
                 >
                   <option value="">Select warehouse</option>
-                  <option value="uttara">Uttara</option>
-                  <option value="mirpur">Mirpur</option>
-                  <option value="dhanmondi">Dhanmondi</option>
+                  {serviceCenter?.map((center) => (
+                    <option key={center._id} value={center.district}>
+                      {center.district}
+                    </option>
+                  ))}
                 </select>
                 {errors.warehouse && (
                   <p className="text-red-500 text-sm mt-1">
@@ -162,7 +206,6 @@ const BeARider = () => {
                 )}
               </div>
 
-              {/* Submit */}
               <button
                 type="submit"
                 className="btn bg-[#CAEB66] text-black w-full"

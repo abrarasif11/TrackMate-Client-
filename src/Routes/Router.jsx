@@ -35,6 +35,7 @@ export const router = createBrowserRouter([
             <BeARider />
           </PrivateRoute>
         ),
+        loader: () => fetch("ServiceCenter.json"),
       },
       {
         path: "sendParcel",
