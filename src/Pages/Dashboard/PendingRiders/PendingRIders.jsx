@@ -1,30 +1,33 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Swal from "sweetalert2";
 import { FaEye, FaCheck, FaTimes } from "react-icons/fa";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import { useQuery } from "@tanstack/react-query";
+import Loader from "../../../Shared/Loader/Loader";
 
 const PendingRiders = () => {
   const axiosSecure = useAxiosSecure();
-  const [riders, setRiders] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [selectedRider, setSelectedRider] = useState(null);
 
-  const fetchPendingRiders = async () => {
-    try {
-      setLoading(true);
-      const { data } = await axiosSecure.get("/riders/pending");
-      setRiders(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Fetch riders with React Query
+  const {
+    isPending,
+    data: riders = [],
+    refetch,
+  } = useQuery({
+    queryKey: ["pendingRiders"],
+    queryFn: async () => {
+      const res = await axiosSecure.get("/riders/pending");
+      return res.data;
+    },
+  });
 
-  useEffect(() => {
-    fetchPendingRiders();
-  }, []);
+  // Show loader
+  if (isPending) {
+    return <Loader />;
+  }
 
+  // Approve / Reject rider
   const handleStatusUpdate = async (riderId, status) => {
     const actionText = status === "Active" ? "Approve" : "Reject";
 
@@ -39,8 +42,12 @@ const PendingRiders = () => {
     if (result.isConfirmed) {
       try {
         await axiosSecure.patch(`/riders/${riderId}`, { status });
-        Swal.fire("Success!", `Rider ${actionText.toLowerCase()}ed successfully.`, "success");
-        fetchPendingRiders();
+        Swal.fire(
+          "Success!",
+          `Rider ${actionText.toLowerCase()}ed successfully.`,
+          "success"
+        );
+        refetch();
         setSelectedRider(null);
       } catch (err) {
         Swal.fire("Error!", err.response?.data?.message || err.message, "error");
@@ -52,29 +59,46 @@ const PendingRiders = () => {
     <div className="p-6 bg-white min-h-screen">
       <h2 className="text-2xl font-bold mb-6 text-black">Pending Riders</h2>
 
-      {loading ? (
-        <p className="text-black">Loading...</p>
-      ) : riders.length === 0 ? (
+      {/* No data */}
+      {riders.length === 0 ? (
         <p className="text-black">No pending riders found.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">Name</th>
-                <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">Email</th>
-                <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">Contact</th>
-                <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">Region</th>
-                <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">Warehouse</th>
-                <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">NID NO</th>
-                <th className="px-4 py-3 text-center text-black font-semibold uppercase text-sm">Actions</th>
+                <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">
+                  Name
+                </th>
+                <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">
+                  Email
+                </th>
+                <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">
+                  Contact
+                </th>
+                <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">
+                  Region
+                </th>
+                <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">
+                  Warehouse
+                </th>
+                <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">
+                  NID No
+                </th>
+                <th className="px-4 py-3 text-center text-black font-semibold uppercase text-sm">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {riders.map((rider, index) => (
                 <tr
                   key={rider._id}
-                  className={index % 2 === 0 ? "bg-white hover:bg-gray-50" : "bg-gray-50 hover:bg-gray-100"}
+                  className={
+                    index % 2 === 0
+                      ? "bg-white hover:bg-gray-50"
+                      : "bg-gray-50 hover:bg-gray-100"
+                  }
                 >
                   <td className="px-4 py-3 text-black">{rider.name}</td>
                   <td className="px-4 py-3 text-black">{rider.email}</td>
@@ -82,7 +106,6 @@ const PendingRiders = () => {
                   <td className="px-4 py-3 text-black">{rider.region}</td>
                   <td className="px-4 py-3 text-black">{rider.warehouse}</td>
                   <td className="px-4 py-3 text-black">{rider.nid}</td>
-                  {/* <td className="px-4 py-3 text-black">{new Date(rider.nid).toLocaleString()}</td> */}
                   <td className="px-4 py-3 text-center flex justify-center gap-2">
                     <button
                       className="bg-[#CAEB66] text-black px-3 py-1 rounded flex items-center justify-center hover:opacity-90 transition"
@@ -113,7 +136,7 @@ const PendingRiders = () => {
         </div>
       )}
 
-      {/* Modal for rider details */}
+      {/* Rider Details Modal */}
       {selectedRider && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-xl shadow-xl w-96 relative">
@@ -125,13 +148,33 @@ const PendingRiders = () => {
             </button>
             <h3 className="text-xl font-bold mb-4 text-black">Rider Details</h3>
             <div className="space-y-2 text-black">
-              <p><strong>Name:</strong> {selectedRider.name}</p>
-              <p><strong>Email:</strong> {selectedRider.email}</p>
-              <p><strong>Contact:</strong> {selectedRider.contact || "-"}</p>
-              <p><strong>Region:</strong> {selectedRider.region}</p>
-              <p><strong>Warehouse:</strong> {selectedRider.warehouse}</p>
-              <p><strong>Status:</strong> <span className="capitalize">{selectedRider.status || "Pending"}</span></p>
-              <p><strong>Joined At:</strong> {new Date(selectedRider.createdAt).toLocaleString()}</p>
+              <p>
+                <strong>Name:</strong> {selectedRider.name}
+              </p>
+              <p>
+                <strong>Email:</strong> {selectedRider.email}
+              </p>
+              <p>
+                <strong>Contact:</strong> {selectedRider.contact || "-"}
+              </p>
+              <p>
+                <strong>Region:</strong> {selectedRider.region}
+              </p>
+              <p>
+                <strong>Warehouse:</strong> {selectedRider.warehouse}
+              </p>
+              <p>
+                <strong>Status:</strong>{" "}
+                <span className="capitalize">
+                  {selectedRider.status || "Pending"}
+                </span>
+              </p>
+              {selectedRider.createdAt && (
+                <p>
+                  <strong>Joined At:</strong>{" "}
+                  {new Date(selectedRider.createdAt).toLocaleString()}
+                </p>
+              )}
             </div>
             <div className="mt-6 flex justify-end gap-2">
               <button
