@@ -7,6 +7,7 @@ import {
   FaUserEdit,
   FaUserCheck,
   FaUserClock,
+  FaBoxOpen,
 } from "react-icons/fa";
 import { FiMapPin } from "react-icons/fi";
 const DashboardLayout = () => {
@@ -63,7 +64,7 @@ const DashboardLayout = () => {
                 }`
               }
             >
-              <FaBox className="w-5 h-5" />
+              <FaBoxOpen className="w-5 h-5" />
               My Parcels
             </NavLink>
           </li>
@@ -118,7 +119,7 @@ const DashboardLayout = () => {
                 }`
               }
             >
-              <FaUserCheck className="w-5 h-5" />  
+              <FaUserCheck className="w-5 h-5" />
               Active Riders
             </NavLink>
           </li>
@@ -132,7 +133,7 @@ const DashboardLayout = () => {
                 }`
               }
             >
-              <FaUserClock className="w-5 h-5" />   
+              <FaUserClock className="w-5 h-5" />
               Pending Riders
             </NavLink>
           </li>
