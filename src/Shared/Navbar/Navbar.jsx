@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, NavLink } from "react-router";
 import TrackMateLogo from "../TrackMateLogo/TrackMateLogo";
-import useAuth from "../../hooks/useAuth";
+import useAuth from "../../Hooks/useAuth";
 
 const Navbar = () => {
   const { user, logOut } = useAuth();

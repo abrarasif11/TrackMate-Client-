@@ -1,5 +1,5 @@
 import React from "react";
-import useAuth from "../../hooks/useAuth";
+import useAuth from "../../Hooks/useAuth";
 import useAxios from "../../Hooks/useAxios";
 
 const SocialLogin = () => {

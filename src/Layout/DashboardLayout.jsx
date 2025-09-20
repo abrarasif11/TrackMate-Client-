@@ -118,7 +118,7 @@ const DashboardLayout = () => {
                 }`
               }
             >
-              <FaUserCheck className="w-5 h-5" /> {/* Use any icon you like */}
+              <FaUserCheck className="w-5 h-5" />  
               Active Riders
             </NavLink>
           </li>
@@ -132,7 +132,7 @@ const DashboardLayout = () => {
                 }`
               }
             >
-              <FaUserClock className="w-5 h-5" /> {/* Use any icon you like */}
+              <FaUserClock className="w-5 h-5" />  
               Pending Riders
             </NavLink>
           </li>
