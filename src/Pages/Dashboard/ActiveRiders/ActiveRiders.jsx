@@ -1,67 +1,72 @@
 import React, { useState } from "react";
 import Swal from "sweetalert2";
-import { FaEye, FaCheck, FaTimes } from "react-icons/fa";
-import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import { FaTimes, FaUserSlash, FaSearch } from "react-icons/fa";
 import { useQuery } from "@tanstack/react-query";
 import Loader from "../../../Shared/Loader/Loader";
+import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 
-const PendingRiders = () => {
+const ActiveRiders = () => {
   const axiosSecure = useAxiosSecure();
   const [selectedRider, setSelectedRider] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Fetch riders with React Query
-  const {
-    isPending,
-    data: riders = [],
-    refetch,
-  } = useQuery({
-    queryKey: ["pendingRiders"],
+  // Fetch active riders with search
+  const { isPending, data: riders = [], refetch } = useQuery({
+    queryKey: ["activeRiders", searchTerm],
     queryFn: async () => {
-      const res = await axiosSecure.get("/riders/pending");
+      const res = await axiosSecure.get(
+        `/riders/active${searchTerm ? `?search=${searchTerm}` : ""}`
+      );
       return res.data;
     },
   });
 
-  // Show loader
-  if (isPending) {
-    return <Loader />;
-  }
+  if (isPending) return <Loader />;
 
-  // Approve / Reject rider
-  const handleStatusUpdate = async (riderId, status) => {
-    const actionText = status === "Active" ? "Approve" : "Reject";
-
+  // Deactivate rider
+  const handleDeactivate = async (riderId) => {
     const result = await Swal.fire({
-      title: `Are you sure you want to ${actionText} this rider?`,
+      title: "Are you sure you want to deactivate this rider?",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: actionText,
+      confirmButtonText: "Deactivate",
       cancelButtonText: "Cancel",
     });
 
     if (result.isConfirmed) {
       try {
-        await axiosSecure.patch(`/riders/${riderId}`, { status });
-        Swal.fire(
-          "Success!",
-          `Rider ${actionText.toLowerCase()}ed successfully.`,
-          "success"
-        );
+        await axiosSecure.patch(`/riders/${riderId}`, { status: "Inactive" });
+        Swal.fire("Success!", "Rider deactivated successfully.", "success");
         refetch();
         setSelectedRider(null);
       } catch (err) {
-        Swal.fire("Error!", err.response?.data?.message || err.message, "error");
+        Swal.fire(
+          "Error!",
+          err.response?.data?.message || err.message,
+          "error"
+        );
       }
     }
   };
 
   return (
     <div className="p-6 bg-white min-h-screen">
-      <h2 className="text-2xl font-bold mb-6 text-black">Pending Riders</h2>
+      <h2 className="text-2xl font-bold mb-6 text-black">Active Riders</h2>
 
-      {/* No data */}
+      {/* Search Input */}
+      <div className="mb-4 relative w-full max-w-sm">
+        <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <input
+          type="text"
+          placeholder="Search by name..."
+          className="input input-bordered pl-10 w-full"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
       {riders.length === 0 ? (
-        <p className="text-black">No pending riders found.</p>
+        <p className="text-black">No active riders found.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
@@ -80,14 +85,14 @@ const PendingRiders = () => {
                   Region
                 </th>
                 <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">
-                  District
+                  Warehouse
                 </th>
                 <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">
-                  Applied
+                  Created At
                 </th>
-                {/* <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">
-                  Status Updated At
-                </th> */}
+                <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">
+                  Status
+                </th>
                 <th className="px-4 py-3 text-center text-black font-semibold uppercase text-sm">
                   Actions
                 </th>
@@ -113,32 +118,18 @@ const PendingRiders = () => {
                       ? new Date(rider.createdAt).toLocaleString()
                       : "N/A"}
                   </td>
-                  {/* <td className="px-4 py-3 text-black">
-                    {rider.statusUpdatedAt
-                      ? new Date(rider.statusUpdatedAt).toLocaleString()
-                      : "Not updated yet"}
-                  </td> */}
+                  <td className="px-4 py-3 text-black capitalize">
+                    {rider.status || "Active"}
+                  </td>
                   <td className="px-4 py-3 text-center flex justify-center gap-2">
+                    {/* Deactivate / Manage deactivated users */}
                     <button
-                      className="bg-[#CAEB66] text-black px-3 py-1 rounded flex items-center justify-center hover:opacity-90 transition"
-                      onClick={() => setSelectedRider(rider)}
-                      title="View"
+                      className="bg-red-500 text-white px-3 py-1 rounded flex items-center justify-center hover:opacity-90 transition"
+                      onClick={() => handleDeactivate(rider._id)}
+                      title="Deactivate"
                     >
-                      <FaEye />
-                    </button>
-                    <button
-                      className="bg-[#CAEB66] text-black px-3 py-1 rounded flex items-center justify-center hover:opacity-90 transition"
-                      onClick={() => handleStatusUpdate(rider._id, "Active")}
-                      title="Approve"
-                    >
-                      <FaCheck />
-                    </button>
-                    <button
-                      className="bg-[#CAEB66] text-black px-3 py-1 rounded flex items-center justify-center hover:opacity-90 transition"
-                      onClick={() => handleStatusUpdate(rider._id, "Rejected")}
-                      title="Reject"
-                    >
-                      <FaTimes />
+                      <FaUserSlash/>  
+                      <span className="pl-1"> Deactivate</span> 
                     </button>
                   </td>
                 </tr>
@@ -175,12 +166,10 @@ const PendingRiders = () => {
               <p>
                 <strong>Warehouse:</strong> {selectedRider.warehouse}
               </p>
-              {/* <p>
+              <p>
                 <strong>Status:</strong>{" "}
-                <span className="capitalize">
-                  {selectedRider.status || "Pending"}
-                </span>
-              </p> */}
+                <span className="capitalize">{selectedRider.status}</span>
+              </p>
               <p>
                 <strong>Created At:</strong>{" "}
                 {selectedRider.createdAt
@@ -194,20 +183,6 @@ const PendingRiders = () => {
                 </p>
               )}
             </div>
-            <div className="mt-6 flex justify-end gap-2">
-              <button
-                className="bg-[#CAEB66] text-black px-4 py-2 rounded-md hover:opacity-90 transition"
-                onClick={() => handleStatusUpdate(selectedRider._id, "Active")}
-              >
-                <FaCheck /> Approve
-              </button>
-              <button
-                className="bg-[#CAEB66] text-black px-4 py-2 rounded-md hover:opacity-90 transition"
-                onClick={() => handleStatusUpdate(selectedRider._id, "Rejected")}
-              >
-                <FaTimes /> Reject
-              </button>
-            </div>
           </div>
         </div>
       )}
@@ -215,4 +190,4 @@ const PendingRiders = () => {
   );
 };
 
-export default PendingRiders;
+export default ActiveRiders;
