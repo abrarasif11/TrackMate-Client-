@@ -1,7 +1,13 @@
 import React from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import TrackMateLogo from "../Shared/TrackMateLogo/TrackMateLogo";
-import { FaBox, FaMoneyCheckAlt, FaUserEdit } from "react-icons/fa";
+import {
+  FaBox,
+  FaMoneyCheckAlt,
+  FaUserEdit,
+  FaUserCheck,
+  FaUserClock,
+} from "react-icons/fa";
 import { FiMapPin } from "react-icons/fi";
 const DashboardLayout = () => {
   return (
@@ -100,6 +106,34 @@ const DashboardLayout = () => {
             >
               <FaUserEdit className="w-5 h-5" />
               Update Profile
+            </NavLink>
+          </li>
+          {/* Riders Link */}
+          <li>
+            <NavLink
+              to="/dashboard/activeRiders"
+              className={({ isActive }) =>
+                `flex items-center gap-2 ${
+                  isActive ? "bg-base-300 rounded-lg font-semibold" : ""
+                }`
+              }
+            >
+              <FaUserCheck className="w-5 h-5" /> {/* Use any icon you like */}
+              Active Riders
+            </NavLink>
+          </li>
+
+          <li>
+            <NavLink
+              to="/dashboard/pendingRiders"
+              className={({ isActive }) =>
+                `flex items-center gap-2 ${
+                  isActive ? "bg-base-300 rounded-lg font-semibold" : ""
+                }`
+              }
+            >
+              <FaUserClock className="w-5 h-5" /> {/* Use any icon you like */}
+              Pending Riders
             </NavLink>
           </li>
         </ul>

@@ -1,30 +1,41 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import rider from "../../../assets/assests/agent-pending.png";
 import { useLoaderData } from "react-router";
 import Swal from "sweetalert2";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import useAuth from "../../../Hooks/useAuth"
 
 const BeARider = () => {
   const serviceCenter = useLoaderData();
   const axiosSecure = useAxiosSecure();
+  const { user } = useAuth(); // Get the logged-in user
 
   const {
     register,
     handleSubmit,
-    // reset,
+    setValue,
+    reset,
     formState: { errors },
   } = useForm();
 
-  const onSubmit = async (data) => {
-    console.log("Form Data:", data);
+  // Pre-fill email and name if user is logged in
+  useEffect(() => {
+    if (user?.email) {
+      setValue("email", user.email);
+    }
+    if (user?.displayName) {
+      setValue("name", user.displayName);
+    }
+  }, [user, setValue]);
 
+  const onSubmit = async (data) => {
     try {
-      //  POST form data to backend
+      // POST form data to backend
       const res = await axiosSecure.post("/riders", data);
       console.log("MongoDB Response:", res.data.insertedId);
 
-      //  Show SweetAlert2 only after successful submission
+      // SweetAlert2 popup
       Swal.fire({
         title: "Application Submitted!",
         html: `
@@ -40,7 +51,11 @@ const BeARider = () => {
         confirmButtonText: "OK",
       });
 
-      // reset();
+      // Reset the form (except email & name if you want)
+      reset({
+        email: user?.email || "",
+        name: user?.displayName || "",
+      });
     } catch (error) {
       console.error("Error submitting form:", error);
       Swal.fire({
@@ -77,9 +92,7 @@ const BeARider = () => {
               {/* Name and Age */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Your Name
-                  </label>
+                  <label className="block text-sm font-medium mb-1">Your Name</label>
                   <input
                     type="text"
                     {...register("name", { required: true })}
@@ -87,15 +100,11 @@ const BeARider = () => {
                     placeholder="Your Name"
                   />
                   {errors.name && (
-                    <p className="text-red-500 text-sm mt-1">
-                      Name is required
-                    </p>
+                    <p className="text-red-500 text-sm mt-1">Name is required</p>
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Your Age
-                  </label>
+                  <label className="block text-sm font-medium mb-1">Your Age</label>
                   <input
                     type="number"
                     {...register("age", { required: true })}
@@ -111,25 +120,20 @@ const BeARider = () => {
               {/* Email and Region */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Your Email
-                  </label>
+                  <label className="block text-sm font-medium mb-1">Your Email</label>
                   <input
                     type="email"
                     {...register("email", { required: true })}
                     className="input input-bordered w-full"
                     placeholder="Your Email"
+                    readOnly={!!user?.email} // Prevent editing if already logged in
                   />
                   {errors.email && (
-                    <p className="text-red-500 text-sm mt-1">
-                      Email is required
-                    </p>
+                    <p className="text-red-500 text-sm mt-1">Email is required</p>
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Your Region
-                  </label>
+                  <label className="block text-sm font-medium mb-1">Your Region</label>
                   <select
                     {...register("region", { required: true })}
                     className="select select-bordered w-full"
@@ -142,9 +146,7 @@ const BeARider = () => {
                     ))}
                   </select>
                   {errors.region && (
-                    <p className="text-red-500 text-sm mt-1">
-                      Region is required
-                    </p>
+                    <p className="text-red-500 text-sm mt-1">Region is required</p>
                   )}
                 </div>
               </div>
@@ -152,9 +154,7 @@ const BeARider = () => {
               {/* NID and Contact */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">
-                    NID No
-                  </label>
+                  <label className="block text-sm font-medium mb-1">NID No</label>
                   <input
                     type="text"
                     {...register("nid", { required: true })}
@@ -166,9 +166,7 @@ const BeARider = () => {
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Contact
-                  </label>
+                  <label className="block text-sm font-medium mb-1">Contact</label>
                   <input
                     type="text"
                     {...register("contact", { required: true })}
@@ -176,9 +174,7 @@ const BeARider = () => {
                     placeholder="Contact"
                   />
                   {errors.contact && (
-                    <p className="text-red-500 text-sm mt-1">
-                      Contact is required
-                    </p>
+                    <p className="text-red-500 text-sm mt-1">Contact is required</p>
                   )}
                 </div>
               </div>
