@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import useAxiosSecure from "../../hooks/useAxiosSecure";
+import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import { FaEye, FaCheck, FaTimes } from "react-icons/fa";
+import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 
 const PendingRiders = () => {
   const axiosSecure = useAxiosSecure();
@@ -13,7 +13,7 @@ const PendingRiders = () => {
     try {
       setLoading(true);
       const { data } = await axiosSecure.get("/riders/pending");
-      setRiders(data.data);
+      setRiders(data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -27,6 +27,7 @@ const PendingRiders = () => {
 
   const handleStatusUpdate = async (riderId, status) => {
     const actionText = status === "Active" ? "Approve" : "Reject";
+
     const result = await Swal.fire({
       title: `Are you sure you want to ${actionText} this rider?`,
       icon: "warning",
@@ -38,11 +39,7 @@ const PendingRiders = () => {
     if (result.isConfirmed) {
       try {
         await axiosSecure.patch(`/riders/${riderId}`, { status });
-        Swal.fire(
-          "Success!",
-          `Rider ${actionText.toLowerCase()}ed successfully.`,
-          "success"
-        );
+        Swal.fire("Success!", `Rider ${actionText.toLowerCase()}ed successfully.`, "success");
         fetchPendingRiders();
         setSelectedRider(null);
       } catch (err) {
@@ -52,8 +49,8 @@ const PendingRiders = () => {
   };
 
   return (
-    <div className="p-4 bg-white">
-      <h2 className="text-xl font-semibold mb-4 text-black">Pending Riders</h2>
+    <div className="p-6 bg-white min-h-screen">
+      <h2 className="text-2xl font-bold mb-6 text-black">Pending Riders</h2>
 
       {loading ? (
         <p className="text-black">Loading...</p>
@@ -61,42 +58,48 @@ const PendingRiders = () => {
         <p className="text-black">No pending riders found.</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full border border-gray-200">
-            <thead className="bg-gray-100">
+          <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
+            <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-2 border text-black">Name</th>
-                <th className="px-4 py-2 border text-black">Email</th>
-                <th className="px-4 py-2 border text-black">Phone</th>
-                <th className="px-4 py-2 border text-black">Joined At</th>
-                <th className="px-4 py-2 border text-black">Action</th>
+                <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">Name</th>
+                <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">Email</th>
+                <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">Contact</th>
+                <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">Region</th>
+                <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">Warehouse</th>
+                <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">NID NO</th>
+                <th className="px-4 py-3 text-center text-black font-semibold uppercase text-sm">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {riders.map((rider) => (
-                <tr key={rider._id}>
-                  <td className="px-4 py-2 border text-black">{rider.name}</td>
-                  <td className="px-4 py-2 border text-black">{rider.email}</td>
-                  <td className="px-4 py-2 border text-black">{rider.phone || "-"}</td>
-                  <td className="px-4 py-2 border text-black">
-                    {new Date(rider.createdAt).toLocaleString()}
-                  </td>
-                  <td className="px-4 py-2 border space-x-2 flex items-center">
+              {riders.map((rider, index) => (
+                <tr
+                  key={rider._id}
+                  className={index % 2 === 0 ? "bg-white hover:bg-gray-50" : "bg-gray-50 hover:bg-gray-100"}
+                >
+                  <td className="px-4 py-3 text-black">{rider.name}</td>
+                  <td className="px-4 py-3 text-black">{rider.email}</td>
+                  <td className="px-4 py-3 text-black">{rider.contact || "-"}</td>
+                  <td className="px-4 py-3 text-black">{rider.region}</td>
+                  <td className="px-4 py-3 text-black">{rider.warehouse}</td>
+                  <td className="px-4 py-3 text-black">{rider.nid}</td>
+                  {/* <td className="px-4 py-3 text-black">{new Date(rider.nid).toLocaleString()}</td> */}
+                  <td className="px-4 py-3 text-center flex justify-center gap-2">
                     <button
-                      className="bg-[#CAEB66] text-black px-3 py-1 rounded flex items-center justify-center hover:opacity-90"
+                      className="bg-[#CAEB66] text-black px-3 py-1 rounded flex items-center justify-center hover:opacity-90 transition"
                       onClick={() => setSelectedRider(rider)}
                       title="View"
                     >
                       <FaEye />
                     </button>
                     <button
-                      className="bg-[#CAEB66] text-black px-3 py-1 rounded flex items-center justify-center hover:opacity-90"
+                      className="bg-[#CAEB66] text-black px-3 py-1 rounded flex items-center justify-center hover:opacity-90 transition"
                       onClick={() => handleStatusUpdate(rider._id, "Active")}
                       title="Approve"
                     >
                       <FaCheck />
                     </button>
                     <button
-                      className="bg-[#CAEB66] text-black px-3 py-1 rounded flex items-center justify-center hover:opacity-90"
+                      className="bg-[#CAEB66] text-black px-3 py-1 rounded flex items-center justify-center hover:opacity-90 transition"
                       onClick={() => handleStatusUpdate(rider._id, "Rejected")}
                       title="Reject"
                     >
@@ -113,40 +116,32 @@ const PendingRiders = () => {
       {/* Modal for rider details */}
       {selectedRider && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg w-96 relative">
+          <div className="bg-white p-6 rounded-xl shadow-xl w-96 relative">
             <button
-              className="absolute top-2 right-2 text-black"
+              className="absolute top-3 right-3 text-black text-lg font-bold"
               onClick={() => setSelectedRider(null)}
             >
               ✖
             </button>
-            <h3 className="text-lg font-semibold mb-2 text-black">Rider Details</h3>
-            <p className="text-black">
-              <strong>Name:</strong> {selectedRider.name}
-            </p>
-            <p className="text-black">
-              <strong>Email:</strong> {selectedRider.email}
-            </p>
-            <p className="text-black">
-              <strong>Phone:</strong> {selectedRider.phone || "-"}
-            </p>
-            <p className="text-black">
-              <strong>Status:</strong> {selectedRider.status}
-            </p>
-            <p className="text-black">
-              <strong>Joined At:</strong>{" "}
-              {new Date(selectedRider.createdAt).toLocaleString()}
-            </p>
-
-            <div className="mt-4 flex justify-end gap-2">
+            <h3 className="text-xl font-bold mb-4 text-black">Rider Details</h3>
+            <div className="space-y-2 text-black">
+              <p><strong>Name:</strong> {selectedRider.name}</p>
+              <p><strong>Email:</strong> {selectedRider.email}</p>
+              <p><strong>Contact:</strong> {selectedRider.contact || "-"}</p>
+              <p><strong>Region:</strong> {selectedRider.region}</p>
+              <p><strong>Warehouse:</strong> {selectedRider.warehouse}</p>
+              <p><strong>Status:</strong> <span className="capitalize">{selectedRider.status || "Pending"}</span></p>
+              <p><strong>Joined At:</strong> {new Date(selectedRider.createdAt).toLocaleString()}</p>
+            </div>
+            <div className="mt-6 flex justify-end gap-2">
               <button
-                className="bg-[#CAEB66] text-black px-4 py-2 rounded flex items-center gap-2 hover:opacity-90"
+                className="bg-[#CAEB66] text-black px-4 py-2 rounded-md hover:opacity-90 transition"
                 onClick={() => handleStatusUpdate(selectedRider._id, "Active")}
               >
                 <FaCheck /> Approve
               </button>
               <button
-                className="bg-[#CAEB66] text-black px-4 py-2 rounded flex items-center gap-2 hover:opacity-90"
+                className="bg-[#CAEB66] text-black px-4 py-2 rounded-md hover:opacity-90 transition"
                 onClick={() => handleStatusUpdate(selectedRider._id, "Rejected")}
               >
                 <FaTimes /> Reject

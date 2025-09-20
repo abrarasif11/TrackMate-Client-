@@ -132,7 +132,7 @@ const DashboardLayout = () => {
                 }`
               }
             >
-              <FaUserClock className="w-5 h-5" />  
+              <FaUserClock className="w-5 h-5" />   
               Pending Riders
             </NavLink>
           </li>
