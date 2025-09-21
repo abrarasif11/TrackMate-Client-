@@ -16,6 +16,7 @@ import BeARider from "../Pages/Dashboard/BeARider/BeARider";
 import PendingRiders from "../Pages/Dashboard/PendingRiders/PendingRIders";
 import ActiveRiders from "../Pages/Dashboard/ActiveRiders/ActiveRiders";
 import MakeAdmin from "../Pages/Dashboard/MakeAdmin/MakeAdmin";
+import ForbiddenPage from "../Pages/ForbiddenPage/ForbiddenPage";
 
 export const router = createBrowserRouter([
   {
@@ -25,6 +26,10 @@ export const router = createBrowserRouter([
       {
         path: "/",
         element: <Home />,
+      },
+      {
+        path: "/forbidden",
+        element: <ForbiddenPage />,
       },
       {
         path: "coverage",
