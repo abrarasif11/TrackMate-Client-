@@ -2,7 +2,6 @@ import React from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import TrackMateLogo from "../Shared/TrackMateLogo/TrackMateLogo";
 import {
-  FaBox,
   FaMoneyCheckAlt,
   FaUserEdit,
   FaUserCheck,
@@ -11,7 +10,12 @@ import {
   FaUserShield,
 } from "react-icons/fa";
 import { FiMapPin } from "react-icons/fi";
+import useUserRole from "../Hooks/useUserRole";
 const DashboardLayout = () => {
+  const { role, roleLoading } = useUserRole();
+  if (roleLoading) return <p>Loading...</p>;
+  console.log("Current user role:", role);
+  console.log(role);
   return (
     <div className="drawer lg:drawer-open">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
