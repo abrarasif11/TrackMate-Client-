@@ -8,6 +8,7 @@ import {
   FaUserCheck,
   FaUserClock,
   FaBoxOpen,
+  FaUserShield,
 } from "react-icons/fa";
 import { FiMapPin } from "react-icons/fi";
 const DashboardLayout = () => {
@@ -135,6 +136,20 @@ const DashboardLayout = () => {
             >
               <FaUserClock className="w-5 h-5" />
               Pending Riders
+            </NavLink>
+          </li>
+          {/* Admin Routes */}
+          <li>
+            <NavLink
+              to="/dashboard/makeAdmin"
+              className={({ isActive }) =>
+                `flex items-center gap-2 ${
+                  isActive ? "bg-base-300 rounded-lg font-semibold" : ""
+                }`
+              }
+            >
+              <FaUserShield className="w-5 h-5" />
+              Manage Admins
             </NavLink>
           </li>
         </ul>
