@@ -50,7 +50,11 @@ const PendingRiders = () => {
         refetch();
         setSelectedRider(null);
       } catch (err) {
-        Swal.fire("Error!", err.response?.data?.message || err.message, "error");
+        Swal.fire(
+          "Error!",
+          err.response?.data?.message || err.message,
+          "error"
+        );
       }
     }
   };
@@ -85,9 +89,6 @@ const PendingRiders = () => {
                 <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">
                   Applied
                 </th>
-                {/* <th className="px-4 py-3 text-left text-black font-semibold uppercase text-sm">
-                  Status Updated At
-                </th> */}
                 <th className="px-4 py-3 text-center text-black font-semibold uppercase text-sm">
                   Actions
                 </th>
@@ -105,7 +106,9 @@ const PendingRiders = () => {
                 >
                   <td className="px-4 py-3 text-black">{rider.name}</td>
                   <td className="px-4 py-3 text-black">{rider.email}</td>
-                  <td className="px-4 py-3 text-black">{rider.contact || "-"}</td>
+                  <td className="px-4 py-3 text-black">
+                    {rider.contact || "-"}
+                  </td>
                   <td className="px-4 py-3 text-black">{rider.region}</td>
                   <td className="px-4 py-3 text-black">{rider.warehouse}</td>
                   <td className="px-4 py-3 text-black">
@@ -113,11 +116,6 @@ const PendingRiders = () => {
                       ? new Date(rider.createdAt).toLocaleString()
                       : "N/A"}
                   </td>
-                  {/* <td className="px-4 py-3 text-black">
-                    {rider.statusUpdatedAt
-                      ? new Date(rider.statusUpdatedAt).toLocaleString()
-                      : "Not updated yet"}
-                  </td> */}
                   <td className="px-4 py-3 text-center flex justify-center gap-2">
                     <button
                       className="bg-[#CAEB66] text-black px-3 py-1 rounded flex items-center justify-center hover:opacity-90 transition"
@@ -128,14 +126,18 @@ const PendingRiders = () => {
                     </button>
                     <button
                       className="bg-[#CAEB66] text-black px-3 py-1 rounded flex items-center justify-center hover:opacity-90 transition"
-                      onClick={() => handleStatusUpdate(rider._id, "Active")}
+                      onClick={() =>
+                        handleStatusUpdate(rider._id, "Active")
+                      }
                       title="Approve"
                     >
                       <FaCheck />
                     </button>
                     <button
                       className="bg-[#CAEB66] text-black px-3 py-1 rounded flex items-center justify-center hover:opacity-90 transition"
-                      onClick={() => handleStatusUpdate(rider._id, "Rejected")}
+                      onClick={() =>
+                        handleStatusUpdate(rider._id, "Rejected")
+                      }
                       title="Reject"
                     >
                       <FaTimes />
@@ -175,12 +177,6 @@ const PendingRiders = () => {
               <p>
                 <strong>Warehouse:</strong> {selectedRider.warehouse}
               </p>
-              {/* <p>
-                <strong>Status:</strong>{" "}
-                <span className="capitalize">
-                  {selectedRider.status || "Pending"}
-                </span>
-              </p> */}
               <p>
                 <strong>Created At:</strong>{" "}
                 {selectedRider.createdAt
@@ -197,13 +193,17 @@ const PendingRiders = () => {
             <div className="mt-6 flex justify-end gap-2">
               <button
                 className="bg-[#CAEB66] text-black px-4 py-2 rounded-md hover:opacity-90 transition"
-                onClick={() => handleStatusUpdate(selectedRider._id, "Active")}
+                onClick={() =>
+                  handleStatusUpdate(selectedRider._id, "Active")
+                }
               >
                 <FaCheck /> Approve
               </button>
               <button
                 className="bg-[#CAEB66] text-black px-4 py-2 rounded-md hover:opacity-90 transition"
-                onClick={() => handleStatusUpdate(selectedRider._id, "Rejected")}
+                onClick={() =>
+                  handleStatusUpdate(selectedRider._id, "Rejected")
+                }
               >
                 <FaTimes /> Reject
               </button>

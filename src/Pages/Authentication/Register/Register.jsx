@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
-import useAuth from "../../../hooks/useAuth";
+import useAuth from "../../../Hooks/useAuth";
 import Swal from "sweetalert2";
 import { updateProfile } from "firebase/auth";
 import useAxios from "../../../Hooks/useAxios";
@@ -92,7 +92,7 @@ const Register = () => {
         icon: "success",
         confirmButtonText: "OK",
       }).then(() => {
-        navigate("/signIn");
+        navigate("/");
       });
     } catch (error) {
       console.error("Error during registration:", error);
@@ -230,7 +230,7 @@ const Register = () => {
       {/* Already have account */}
       <p className="text-sm text-center text-gray-600">
         Already have an account?{" "}
-        <Link to="/signIn" className="text-[#A0C948] font-medium">
+        <Link  to="/signIn" className="text-[#A0C948] font-medium">
           Login
         </Link>
       </p>

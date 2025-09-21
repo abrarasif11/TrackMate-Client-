@@ -1,7 +1,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { Link, useLocation, useNavigate } from "react-router";
-import useAuth from "../../../hooks/useAuth";
+import useAuth from "../../../Hooks/useAuth";
 
 const Login = () => {
   const {
@@ -111,7 +111,11 @@ const Login = () => {
       {/* Register */}
       <p className="text-sm text-center text-gray-600">
         Don’t have any account?{" "}
-        <Link to="/register" className="text-[#A0C948] font-medium">
+        <Link
+          state={{ from }}
+          to="/register"
+          className="text-[#A0C948] font-medium"
+        >
           Register
         </Link>
       </p>
