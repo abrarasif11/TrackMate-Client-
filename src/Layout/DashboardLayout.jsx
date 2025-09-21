@@ -115,33 +115,37 @@ const DashboardLayout = () => {
             </NavLink>
           </li>
           {/* Riders Link */}
-          <li>
-            <NavLink
-              to="/dashboard/activeRiders"
-              className={({ isActive }) =>
-                `flex items-center gap-2 ${
-                  isActive ? "bg-base-300 rounded-lg font-semibold" : ""
-                }`
-              }
-            >
-              <FaUserCheck className="w-5 h-5" />
-              Active Riders
-            </NavLink>
-          </li>
+          {!roleLoading && role === "admin" && (
+            <>
+              <li>
+                <NavLink
+                  to="/dashboard/activeRiders"
+                  className={({ isActive }) =>
+                    `flex items-center gap-2 ${
+                      isActive ? "bg-base-300 rounded-lg font-semibold" : ""
+                    }`
+                  }
+                >
+                  <FaUserCheck className="w-5 h-5" />
+                  Active Riders
+                </NavLink>
+              </li>
 
-          <li>
-            <NavLink
-              to="/dashboard/pendingRiders"
-              className={({ isActive }) =>
-                `flex items-center gap-2 ${
-                  isActive ? "bg-base-300 rounded-lg font-semibold" : ""
-                }`
-              }
-            >
-              <FaUserClock className="w-5 h-5" />
-              Pending Riders
-            </NavLink>
-          </li>
+              <li>
+                <NavLink
+                  to="/dashboard/pendingRiders"
+                  className={({ isActive }) =>
+                    `flex items-center gap-2 ${
+                      isActive ? "bg-base-300 rounded-lg font-semibold" : ""
+                    }`
+                  }
+                >
+                  <FaUserClock className="w-5 h-5" />
+                  Pending Riders
+                </NavLink>
+              </li>
+            </>
+          )}
           {/* Admin Routes */}
           {!roleLoading && role === "admin" && (
             <>

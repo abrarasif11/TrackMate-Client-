@@ -19,6 +19,7 @@
     "daisyui": "^5.1.10",
     "date-fns": "^4.1.0",
     "firebase": "^12.2.1",
+    "framer-motion": "^12.23.16",
     "leaflet": "^1.9.4",
     "localforage": "^1.10.0",
     "lucide-react": "^0.544.0",
