@@ -9,7 +9,6 @@ const MakeAdmin = () => {
   const queryClient = useQueryClient();
   const [email, setEmail] = useState("");
 
-  // Fetch users by email
   const {
     data: users = [],
     isFetching,
@@ -22,22 +21,44 @@ const MakeAdmin = () => {
       const res = await axiosSecure.get(`/users/search?email=${email}`);
       return res.data;
     },
-    enabled: false, // fetch only on search button click
+    enabled: false,
     retry: false,
   });
 
-  // Mutation: update user role
+  // Mutation: update user role with optimistic update
   const updateRoleMutation = useMutation({
     mutationFn: ({ id, role }) =>
       axiosSecure.patch(`/users/${id}/role`, { role }),
+    onMutate: async ({ id, role }) => {
+      // Cancel any outgoing re fetches for this query
+      await queryClient.cancelQueries(["searchUsers", email]);
+
+      // Snapshot previous value
+      const previousUsers = queryClient.getQueryData(["searchUsers", email]);
+
+      // update the role locally
+      queryClient.setQueryData(["searchUsers", email], (old = []) =>
+        old.map((user) => (user._id === id ? { ...user, role } : user))
+      );
+
+      // Return context for rollback
+      return { previousUsers };
+    },
+    onError: (err, variables, context) => {
+      Swal.fire("Error", "Failed to update role", "error");
+      if (context?.previousUsers) {
+        queryClient.setQueryData(["searchUsers", email], context.previousUsers);
+      }
+    },
     onSuccess: () => {
       Swal.fire("Success", "User role updated", "success");
+    },
+    onSettled: () => {
+      // refetch to sync with server
       queryClient.invalidateQueries(["searchUsers", email]);
     },
-    onError: () => Swal.fire("Error", "Failed to update role", "error"),
   });
 
-  // Unified handler for Make Admin / Remove Admin
   const handleRoleChange = (id, role) => {
     updateRoleMutation.mutate({ id, role });
   };
@@ -63,7 +84,7 @@ const MakeAdmin = () => {
         />
         <button
           type="submit"
-          className="btn bg-[#CAEB66] flex items-center gap-2"
+          className="btn bg-[#CAEB66] text-black flex items-center gap-2"
         >
           <FaSearch /> Search
         </button>
@@ -93,7 +114,7 @@ const MakeAdmin = () => {
                   <span
                     className={`px-2 py-1 rounded text-sm ${
                       user.role === "admin"
-                        ? "bg-green-200 text-green-700"
+                        ? "bg-[#CAEB66] text-black"
                         : "bg-gray-200 text-gray-700"
                     }`}
                   >
@@ -106,7 +127,7 @@ const MakeAdmin = () => {
                 {user.role !== "admin" ? (
                   <button
                     onClick={() => handleRoleChange(user._id, "admin")}
-                    className="btn bg-green-600  ml-2 mt-2  text-white flex items-center gap-2"
+                    className="btn bg-[#CAEB66] text-black flex items-center gap-2"
                   >
                     <FaUserShield /> Make Admin
                   </button>
