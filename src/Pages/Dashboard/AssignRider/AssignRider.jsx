@@ -9,7 +9,6 @@ const AssignRider = () => {
   const [selectedParcel, setSelectedParcel] = useState(null);
   const [selectedRider, setSelectedRider] = useState(null);
 
-  // Fetch parcels
   const {
     data: parcels = [],
     isLoading,
@@ -23,7 +22,6 @@ const AssignRider = () => {
     },
   });
 
-  // Fetch available riders when a parcel is selected
   const {
     data: availableRiders = [],
     refetch: refetchRiders,
@@ -145,7 +143,7 @@ const AssignRider = () => {
                     {parcel.status}
                   </span>
                 </td>
-                {/* Delivery */}
+                {/* Delivery*/}
                 <td className="px-6 py-4">
                   <span
                     className={`px-3 py-1 text-xs font-semibold rounded-full whitespace-nowrap ${
