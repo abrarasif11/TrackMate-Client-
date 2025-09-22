@@ -22,7 +22,7 @@ const ForbiddenPage = () => {
       {/* Button */}
       <button
         onClick={() => (window.location.href = "/")}
-        className="mt-6 px-6 py-2 bg-[#CAEB66] font-semibold hover:bg-lime-500 text-black font-medium rounded-lg shadow"
+        className="mt-6 px-6 py-2 bg-[#CAEB66] font-semibold hover:bg-lime-500 text-black  rounded-lg shadow"
       >
         Go Home
       </button>

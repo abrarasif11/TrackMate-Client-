@@ -90,13 +90,10 @@ const SendParcel = () => {
         ];
       }
     }
-    console.log("Pricing computed:", { within, outside });
     return { within, outside };
   };
 
   const handleProceed = (data) => {
-    console.log("Form Data Submitted:", data);
-
     const pricing = computePricing(parcelType, data.parcelWeight);
     const isWithin = data.senderWarehouse === data.receiverWarehouse;
     const selected = isWithin ? pricing.within : pricing.outside;
@@ -107,11 +104,9 @@ const SendParcel = () => {
       createdBy: user?.email || "unknown",
       createdAt: new Date().toISOString(),
       trackingId: generateTrackingId(),
-      status: "Pending",
+      status: "Pending", // booking status
+      deliveryStatus: "Processing", // NEW FIELD added
     };
-
-    console.log("Confirm Data Prepared:", parcelData);
-    console.log("Price Breakdown:", { pricing, selected, isWithin });
 
     setPriceBreak({ pricing, selected, isWithin });
     setConfirmData(parcelData);
@@ -121,11 +116,9 @@ const SendParcel = () => {
     if (!confirmData) return;
 
     const payload = { ...confirmData, price: priceBreak?.selected?.total ?? 0 };
-    console.log("Payload to send:", payload);
 
     try {
       const res = await axiosSecure.post("/parcels", payload);
-      console.log("Response from API:", res.data);
 
       if (res.data?.success) {
         toast.success("Parcel booked & saved successfully!", {
@@ -258,6 +251,7 @@ const SendParcel = () => {
               <tbody>
                 <tr><td className="font-medium">Tracking ID</td><td>{confirmData?.trackingId}</td></tr>
                 <tr><td className="font-medium">Status</td><td>{confirmData?.status}</td></tr>
+                <tr><td className="font-medium">Delivery Status</td><td>{confirmData?.deliveryStatus}</td></tr>
                 <tr><td className="font-medium">Parcel Type</td><td>{confirmData?.parcelType}</td></tr>
                 <tr><td className="font-medium">Weight</td><td>{confirmData?.parcelWeight} kg</td></tr>
                 <tr><td className="font-medium">Sender Email</td><td>{confirmData?.senderEmail}</td></tr>
