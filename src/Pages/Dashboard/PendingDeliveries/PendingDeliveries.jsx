@@ -3,8 +3,7 @@ import React from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import useAuth from "../../../Hooks/useAuth";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 const PendingDeliveries = () => {
   const { user } = useAuth(); // get logged-in user
   const queryClient = useQueryClient();
