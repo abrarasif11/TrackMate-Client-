@@ -23,7 +23,7 @@ const AssignRider = () => {
     },
   });
 
-  // Fetch available riders when a parcel is selected
+  // Fetch available riders
   const {
     data: availableRiders = [],
     refetch: refetchRiders,
@@ -64,9 +64,10 @@ const AssignRider = () => {
 
     if (result.isConfirmed) {
       try {
-        await axiosSecure.post("/parcels/assign-rider", {
-          parcelId: selectedParcel._id,
-          riderId: selectedRider._id,
+        // ✅ Call PATCH API
+        await axiosSecure.patch(`/parcels/${selectedParcel._id}/assign`, {
+          riderEmail: selectedRider.email,
+          riderName: selectedRider.name,
         });
 
         Swal.fire({
@@ -102,6 +103,7 @@ const AssignRider = () => {
         Assign Rider to Parcels
       </h2>
 
+      {/* Parcels Table */}
       <div className="overflow-x-auto rounded-lg shadow-md">
         <table className="w-full border-collapse">
           <thead>
@@ -165,7 +167,7 @@ const AssignRider = () => {
         </table>
       </div>
 
-      {/* Modal */}
+      {/* Rider Selection Modal */}
       {selectedParcel && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">

@@ -1,7 +1,7 @@
 import React from "react";
 import Loader from "../../Shared/Loader/Loader";
 import { Navigate } from "react-router-dom";
-import useAuth from "../../hooks/useAuth";
+import useAuth from "../../Hooks/useAuth";
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -11,7 +11,7 @@ const PrivateRoute = ({ children }) => {
   }
 
   if (!user) {
-    return <Navigate to="/signin"  replace/>;
+    return <Navigate to="/register"  replace/>;
   }
 
   return children;
