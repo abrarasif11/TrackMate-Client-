@@ -23,7 +23,7 @@ const AssignRider = () => {
     },
   });
 
-  // Fetch available riders
+  // Fetch available riders when a parcel is selected
   const {
     data: availableRiders = [],
     refetch: refetchRiders,
@@ -64,10 +64,9 @@ const AssignRider = () => {
 
     if (result.isConfirmed) {
       try {
-        // ✅ Call PATCH API
-        await axiosSecure.patch(`/parcels/${selectedParcel._id}/assign`, {
-          riderEmail: selectedRider.email,
-          riderName: selectedRider.name,
+        await axiosSecure.post("/parcels/assign-rider", {
+          parcelId: selectedParcel._id,
+          riderId: selectedRider._id,
         });
 
         Swal.fire({
@@ -103,7 +102,6 @@ const AssignRider = () => {
         Assign Rider to Parcels
       </h2>
 
-      {/* Parcels Table */}
       <div className="overflow-x-auto rounded-lg shadow-md">
         <table className="w-full border-collapse">
           <thead>
@@ -147,8 +145,17 @@ const AssignRider = () => {
                     {parcel.status}
                   </span>
                 </td>
+                {/* Delivery */}
                 <td className="px-6 py-4">
-                  <span className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700">
+                  <span
+                    className={`px-3 py-1 text-xs font-semibold rounded-full whitespace-nowrap ${
+                      parcel.deliveryStatus === "Delivered"
+                        ? "bg-green-100 text-green-700"
+                        : parcel.deliveryStatus === "In Transit"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-200 text-gray-700"
+                    }`}
+                  >
                     {parcel.deliveryStatus}
                   </span>
                 </td>
@@ -167,7 +174,7 @@ const AssignRider = () => {
         </table>
       </div>
 
-      {/* Rider Selection Modal */}
+      {/* Modal */}
       {selectedParcel && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
