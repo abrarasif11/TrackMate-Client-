@@ -9,6 +9,7 @@ const AssignRider = () => {
   const [selectedParcel, setSelectedParcel] = useState(null);
   const [selectedRider, setSelectedRider] = useState(null);
 
+  // Fetch all parcels
   const {
     data: parcels = [],
     isLoading,
@@ -22,6 +23,7 @@ const AssignRider = () => {
     },
   });
 
+  // Fetch available riders for the selected parcel region
   const {
     data: availableRiders = [],
     refetch: refetchRiders,
@@ -51,38 +53,50 @@ const AssignRider = () => {
     if (!selectedRider) return;
 
     const result = await Swal.fire({
-      title: "Are you sure?",
-      text: `Assign rider ${selectedRider.name} to parcel ${selectedParcel.trackingId}?`,
+      title: "Confirm Assignment",
+      html: `
+        <p>Parcel: <strong>${selectedParcel.parcelName}</strong> (${selectedParcel.trackingId})</p>
+        <p>Rider: <strong>${selectedRider.name}</strong> (${selectedRider.email})</p>
+        <p>Status after assignment: <strong>Rider Assigned</strong></p>
+      `,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#CAEB66",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, assign!",
+      confirmButtonText: "Assign Rider",
     });
 
     if (result.isConfirmed) {
       try {
-        await axiosSecure.post("/parcels/assign-rider", {
-          parcelId: selectedParcel._id,
-          riderId: selectedRider._id,
-        });
+        const res = await axiosSecure.patch(
+          `/parcels/${selectedParcel._id}/assign`,
+          {
+            riderEmail: selectedRider.email,
+            riderName: selectedRider.name,
+          }
+        );
 
         Swal.fire({
           icon: "success",
           title: "Rider Assigned!",
-          text: `Rider ${selectedRider.name} has been assigned to parcel ${selectedParcel.trackingId}`,
+          html: `
+            <p>Parcel <strong>${res.data.parcel.parcelName}</strong> has been assigned to rider <strong>${res.data.parcel.assignedRiderName}</strong>.</p>
+            <p>Assigned Rider Email: ${res.data.parcel.assignedRiderEmail}</p>
+            <p>Delivery Status: ${res.data.parcel.deliveryStatus}</p>
+          `,
           confirmButtonColor: "#CAEB66",
         });
 
+        // Update the parcels list immediately
+        refetchParcels();
         setSelectedParcel(null);
         setSelectedRider(null);
-        refetchParcels();
       } catch (err) {
         console.error("Error assigning rider:", err);
         Swal.fire({
           icon: "error",
-          title: "Oops...",
-          text: "Failed to assign rider. Please try again.",
+          title: "Failed",
+          text: "Could not assign rider. Please try again.",
           confirmButtonColor: "#CAEB66",
         });
       }
@@ -143,14 +157,13 @@ const AssignRider = () => {
                     {parcel.status}
                   </span>
                 </td>
-                {/* Delivery*/}
                 <td className="px-6 py-4">
                   <span
                     className={`px-3 py-1 text-xs font-semibold rounded-full whitespace-nowrap ${
                       parcel.deliveryStatus === "Delivered"
                         ? "bg-green-100 text-green-700"
                         : parcel.deliveryStatus === "In Transit"
-                        ? "bg-green-100 text-green-700"
+                        ? "bg-yellow-100 text-yellow-700"
                         : "bg-gray-200 text-gray-700"
                     }`}
                   >
@@ -189,7 +202,9 @@ const AssignRider = () => {
                   availableRiders.map((rider) => (
                     <div
                       key={rider._id}
-                      className="flex items-center justify-between border p-2 rounded hover:bg-gray-100 cursor-pointer"
+                      className={`flex items-center justify-between border p-2 rounded hover:bg-gray-100 cursor-pointer ${
+                        selectedRider?._id === rider._id ? "bg-green-50" : ""
+                      }`}
                       onClick={() => setSelectedRider(rider)}
                     >
                       <div>
@@ -210,6 +225,21 @@ const AssignRider = () => {
                     No available riders in this region.
                   </p>
                 )}
+              </div>
+            )}
+
+            {/* Show assigned rider info preview */}
+            {selectedRider && (
+              <div className="mt-4 p-3 border rounded bg-gray-50">
+                <p>
+                  <strong>Assigned Rider Email:</strong> {selectedRider.email}
+                </p>
+                <p>
+                  <strong>Assigned Rider Name:</strong> {selectedRider.name}
+                </p>
+                <p>
+                  <strong>Delivery Status:</strong> Rider Assigned
+                </p>
               </div>
             )}
 

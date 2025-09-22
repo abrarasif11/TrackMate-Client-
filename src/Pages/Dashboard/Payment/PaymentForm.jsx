@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router"; 
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 import Loader from "../../../Shared/Loader/Loader";
-import useAuth from "../../../hooks/useAuth";
+import useAuth from "../../../Hooks/useAuth";
 import Swal from "sweetalert2"; 
 const PaymentForm = () => {
   const { id } = useParams();
