@@ -1,44 +1,39 @@
 import React from "react";
-
 import axios from "axios";
 import Swal from "sweetalert2";
 import useAuth from "../../../Hooks/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 const PendingDeliveries = () => {
-  const { user } = useAuth(); // get logged-in user
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   // Fetch parcels for the logged-in rider
-  const fetchParcels = async () => {
-    const res = await axios.get(`/riders/parcels?email=${user.email}`);
-    return res.data;
-  };
-
-  const {
-    data: parcels,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["riderParcels", user.email],
-    queryFn: fetchParcels,
+  const { data: parcels = [], isLoading, isError } = useQuery({
+    queryKey: ["riderParcels", user?.email],
+    queryFn: async () => {
+      if (!user?.email) return [];
+      const res = await axios.get(`/riders/${user.email}/parcels`);
+      return Array.isArray(res.data) ? res.data : [];
+    },
     enabled: !!user?.email,
   });
 
   // Mutation to update parcel status
-
-  const updateParcelStatus = useMutation(
-    ({ id, status }) =>
-      axios.patch(`/parcels/${id}/status`, { deliveryStatus: status }),
-    {
-      onSuccess: () => {
-        Swal.fire("Success", "Parcel status updated", "success");
-        queryClient.invalidateQueries(["riderParcels", user.email]);
-      },
-      onError: () => {
-        Swal.fire("Error", "Failed to update status", "error");
-      },
-    }
+  const mutation = useMutation(
+    async ({ id, status }) =>
+      await axios.patch(`/parcels/${id}/status`, { deliveryStatus: status })
   );
+
+  const handleUpdateStatus = async (id, status) => {
+    try {
+      await mutation.mutateAsync({ id, status });
+      Swal.fire("Success", "Parcel status updated", "success");
+      queryClient.invalidateQueries(["riderParcels", user.email]);
+    } catch {
+      Swal.fire("Error", "Failed to update status", "error");
+    }
+  };
 
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Failed to load parcels</div>;
@@ -60,6 +55,13 @@ const PendingDeliveries = () => {
             </tr>
           </thead>
           <tbody>
+            {parcels.length === 0 && (
+              <tr>
+                <td colSpan={7} className="text-center py-4">
+                  No pending deliveries
+                </td>
+              </tr>
+            )}
             {parcels.map((parcel) => (
               <tr key={parcel._id} className="text-center">
                 <td className="px-4 py-2 border">{parcel.trackingId}</td>
@@ -72,10 +74,7 @@ const PendingDeliveries = () => {
                   {parcel.deliveryStatus === "Rider Assigned" && (
                     <button
                       onClick={() =>
-                        updateParcelStatus.mutate({
-                          id: parcel._id,
-                          status: "In Transit",
-                        })
+                        handleUpdateStatus(parcel._id, "In Transit")
                       }
                       className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
                     >
@@ -85,10 +84,7 @@ const PendingDeliveries = () => {
                   {parcel.deliveryStatus === "In Transit" && (
                     <button
                       onClick={() =>
-                        updateParcelStatus.mutate({
-                          id: parcel._id,
-                          status: "Delivered",
-                        })
+                        handleUpdateStatus(parcel._id, "Delivered")
                       }
                       className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
                     >
