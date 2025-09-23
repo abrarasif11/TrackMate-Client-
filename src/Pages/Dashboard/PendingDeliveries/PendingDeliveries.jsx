@@ -9,6 +9,7 @@ const PendingDeliveries = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
+  // ✅ Fetch parcels assigned to this rider
   const { data: parcels = [], isLoading } = useQuery({
     queryKey: ["riderParcels", user.email],
     queryFn: async () => {
@@ -23,8 +24,8 @@ const PendingDeliveries = () => {
   const updateStatusMutation = useMutation({
     mutationFn: async ({ parcelId, status }) => {
       const res = await axios.patch(
-        `http://localhost:5000/parcels/${parcelId}`,
-        { deliveryStatus: status }
+        `http://localhost:5000/parcels/${parcelId}/status`,
+        { status }
       );
       return res.data;
     },
@@ -33,7 +34,7 @@ const PendingDeliveries = () => {
       Swal.fire("Success", "Parcel status updated", "success");
     },
     onError: (err) => {
-      Swal.fire("Error", err.message, "error");
+      Swal.fire("❌ Error", err.message, "error");
     },
   });
 
@@ -42,6 +43,7 @@ const PendingDeliveries = () => {
       title: `Mark as ${newStatus}?`,
       icon: "question",
       showCancelButton: true,
+      confirmButtonColor: "#CAEB66",
       confirmButtonText: "Yes",
     }).then((result) => {
       if (result.isConfirmed) {
