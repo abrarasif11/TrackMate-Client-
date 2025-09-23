@@ -3,7 +3,7 @@ import React from 'react'
 const TrackParcel = () => {
   return (
     <div>
-      TRackingggg...
+      TRackinggg...
     </div>
   )
 }
