@@ -10,7 +10,7 @@ const CompletedDeliveries = () => {
   const queryClient = useQueryClient();
   const [loadingCashout, setLoadingCashout] = useState(false);
 
-  // ✅ fetch completed deliveries
+  //  fetch completed deliveries
   const { data: parcels = [], isPending } = useQuery({
     queryKey: ["completedParcels", user?.email],
     queryFn: async () => {
@@ -22,7 +22,7 @@ const CompletedDeliveries = () => {
     enabled: !!user?.email,
   });
 
-  // ✅ earnings calculation per parcel
+  //  earnings calculation per parcel
   const calculateEarning = (parcel) => {
     if (parcel.senderRegion === parcel.receiverRegion) {
       return (parcel.price * 0.7).toFixed(2);
@@ -31,13 +31,13 @@ const CompletedDeliveries = () => {
     }
   };
 
-  // ✅ total earnings
+  //  total earnings
   const totalEarning = parcels.reduce(
     (sum, p) => sum + parseFloat(calculateEarning(p)),
     0
   );
 
-  // ✅ cashout mutation
+  //  cashout mutation
   const cashoutMutation = useMutation({
     mutationFn: async () => {
       setLoadingCashout(true);
@@ -49,7 +49,7 @@ const CompletedDeliveries = () => {
     },
     onSuccess: () => {
       setLoadingCashout(false);
-      Swal.fire("✅ Success", "Cashout request submitted!", "success");
+      Swal.fire(" Success", "Cashout request submitted!", "success");
       queryClient.invalidateQueries({
         queryKey: ["completedParcels", user.email],
       });
@@ -86,7 +86,7 @@ const CompletedDeliveries = () => {
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-6 text-gray-900 flex items-center gap-2">
-        ✅ Completed Deliveries
+         Completed Deliveries
       </h2>
 
       {/* Earnings & Cashout */}
