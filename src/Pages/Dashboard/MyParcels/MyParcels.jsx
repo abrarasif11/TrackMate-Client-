@@ -11,47 +11,31 @@ import { useNavigate } from "react-router";
 const MyParcels = () => {
   const { user } = useAuth();
   const axiosSecure = useAxiosSecure();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [selectedParcel, setSelectedParcel] = useState(null);
 
-  // Fetch parcels
-  const { data: parcels = [], refetch } = useQuery({
+  // ✅ Fetch parcels only when user.email exists
+  const { data: parcels = [], refetch, isLoading } = useQuery({
     queryKey: ["my-parcels", user?.email],
+    enabled: !!user?.email,
     queryFn: async () => {
-      const res = await axiosSecure.get(`/parcels?email=${user.email}`, {
-        // headers: {
-        //   Authorization: `Bearer ${user.accessToken}`
-        // }
-      });
+      const res = await axiosSecure.get(`/parcels?email=${user.email}`);
       return res.data;
     },
   });
 
-  
   const handleView = (parcel) => setSelectedParcel(parcel);
 
   const handlePay = async (id) => {
     navigate(`/dashboard/payment/${id}`);
     console.log("Pay Parcel ID:", id);
-    // Swal.fire({
-    //   title: "Redirecting to Payment",
-    //   text: `Proceed to pay for Parcel ID: ${id}`,
-    //   icon: "info",
-    //   confirmButtonColor: "#CAEB66",
-    //   background: "#000",
-    //   color: "#fff",
-    // });
-    // 👉 here you can redirect to payment page or API call
-    // e.g., navigate(`/payment/${id}`);
-
-
   };
 
   const handleDelete = async (parcel) => {
     // SweetAlert2 confirmation
     const result = await Swal.fire({
       title: "Are you sure?",
-      text: `Do you want to delete parcel "${parcel.parcelName}"?`,
+      text: `Do you want to delete parcel "${parcel.parcelName || "Unnamed"}"?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#CAEB66",
@@ -67,7 +51,7 @@ const MyParcels = () => {
         refetch();
         Swal.fire({
           title: "Deleted!",
-          text: `"${parcel.parcelName}" has been deleted.`,
+          text: `"${parcel.parcelName || "Parcel"}" has been deleted.`,
           icon: "success",
           confirmButtonColor: "#CAEB66",
           background: "#000",
@@ -91,81 +75,107 @@ const MyParcels = () => {
     <div className="p-6 bg-black min-h-screen text-black">
       <h2 className="text-3xl font-bold mb-6 text-[#CAEB66]">My Parcels</h2>
 
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white shadow-lg rounded-lg overflow-hidden">
-          <thead className="bg-[#CAEB66]">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-black">
-                Title
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-black">
-                Parcel Type
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-black">
-                Cost
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-black">
-                Payment Status
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-black">
-                Created At
-              </th>
-              <th className="px-6 py-3 text-center text-sm font-semibold text-black">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {parcels.map((parcel) => (
-              <tr
-                key={parcel._id}
-                className="border-b hover:bg-[#CAEB66] transition"
-              >
-                <td className="px-6 py-4 text-sm">{parcel.parcelName}</td>
-                <td className="px-6 py-4 text-sm">{parcel.parcelType}</td>
-                <td className="px-6 py-4 text-sm">{parcel.price} ৳</td>
-                <td className="px-6 py-4">
-                  <span
-                    className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                      parcel.status.toLowerCase() === "paid"
-                        ? "bg-[#CAEB66] text-black"
-                        : "bg-black text-white"
-                    }`}
-                  >
-                    {parcel.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-700">
-                  {format(new Date(parcel.createdAt), "PPpp")}
-                </td>
-                <td className="px-6 py-4 flex justify-center gap-3">
-                  <button
-                    onClick={() => handleView(parcel)}
-                    className="text-black hover:text-white"
-                  >
-                    <Eye className="w-5 h-5" />
-                  </button>
-                  {parcel.status.toLowerCase() !== "paid" && (
-                    <button
-                      onClick={() => handlePay(parcel._id)} 
-                      className="text-[#CAEB66] hover:text-black"
-                    >
-                      <CreditCard className="w-5 h-5" />
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleDelete(parcel)}
-                    className="text-black hover:text-red-600"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </td>
+      {/* Loading State */}
+      {isLoading ? (
+        <div className="flex justify-center items-center py-10 text-white">
+          Loading parcels...
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white shadow-lg rounded-lg overflow-hidden">
+            <thead className="bg-[#CAEB66]">
+              <tr>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-black">
+                  Title
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-black">
+                  Parcel Type
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-black">
+                  Cost
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-black">
+                  Payment Status
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-black">
+                  Created At
+                </th>
+                <th className="px-6 py-3 text-center text-sm font-semibold text-black">
+                  Actions
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {parcels.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="6"
+                    className="text-center py-6 text-gray-500"
+                  >
+                    No parcels found
+                  </td>
+                </tr>
+              ) : (
+                parcels.map((parcel) => (
+                  <tr
+                    key={parcel._id}
+                    className="border-b hover:bg-[#CAEB66] transition"
+                  >
+                    <td className="px-6 py-4 text-sm">
+                      {parcel.parcelName || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      {parcel.parcelType || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      {parcel.price || 0} ৳
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                          (parcel.status || "Unpaid").toLowerCase() === "paid"
+                            ? "bg-[#CAEB66] text-black"
+                            : "bg-black text-white"
+                        }`}
+                      >
+                        {parcel.status || "Unpaid"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-700">
+                      {parcel.createdAt
+                        ? format(new Date(parcel.createdAt), "PPpp")
+                        : "N/A"}
+                    </td>
+                    <td className="px-6 py-4 flex justify-center gap-3">
+                      <button
+                        onClick={() => handleView(parcel)}
+                        className="text-black hover:text-white"
+                      >
+                        <Eye className="w-5 h-5" />
+                      </button>
+                      {(parcel.status || "Unpaid").toLowerCase() !==
+                        "paid" && (
+                        <button
+                          onClick={() => handlePay(parcel._id)}
+                          className="text-[#CAEB66] hover:text-black"
+                        >
+                          <CreditCard className="w-5 h-5" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDelete(parcel)}
+                        className="text-black hover:text-red-600"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* View Modal */}
       {selectedParcel && (
@@ -175,33 +185,38 @@ const MyParcels = () => {
               Parcel Details
             </h3>
             <p>
-              <strong>Name:</strong> {selectedParcel.parcelName}
+              <strong>Name:</strong>{" "}
+              {selectedParcel.parcelName || "N/A"}
             </p>
             <p>
-              <strong>Weight:</strong> {selectedParcel.parcelWeight} KG
+              <strong>Weight:</strong>{" "}
+              {selectedParcel.parcelWeight || "N/A"} KG
             </p>
             <p>
-              <strong>Sender:</strong> {selectedParcel.senderName} (
-              {selectedParcel.senderRegion})
+              <strong>Sender:</strong>{" "}
+              {selectedParcel.senderName || "N/A"} (
+              {selectedParcel.senderRegion || "N/A"})
             </p>
             <p>
-              <strong>Receiver:</strong> {selectedParcel.receiverName} (
-              {selectedParcel.receiverRegion})
+              <strong>Receiver:</strong>{" "}
+              {selectedParcel.receiverName || "N/A"} (
+              {selectedParcel.receiverRegion || "N/A"})
             </p>
             <p>
               <strong>Status:</strong>{" "}
               <span
                 className={`px-2 py-1 rounded-full font-semibold ${
-                  selectedParcel.status.toLowerCase() === "paid"
+                  (selectedParcel.status || "Unpaid").toLowerCase() ===
+                  "paid"
                     ? "bg-[#CAEB66] text-black"
                     : "bg-black text-white"
                 }`}
               >
-                {selectedParcel.status}
+                {selectedParcel.status || "Unpaid"}
               </span>
             </p>
             <p>
-              <strong>Price:</strong> {selectedParcel.price} ৳
+              <strong>Price:</strong> {selectedParcel.price || 0} ৳
             </p>
             <div className="mt-4 flex justify-end gap-3">
               <button
