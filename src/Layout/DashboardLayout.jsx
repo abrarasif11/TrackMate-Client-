@@ -12,6 +12,7 @@ import {
   FaTasks,
   FaCheckCircle,
   FaMoneyBillWave,
+  FaHome,
 } from "react-icons/fa";
 import { FiMapPin } from "react-icons/fi";
 import useUserRole from "../Hooks/useUserRole";
@@ -63,7 +64,12 @@ const DashboardLayout = () => {
         <ul className="menu bg-base-200 text-base-content min-h-full w-80 p-4">
           {/* Logo */}
           <TrackMateLogo />
- 
+          <li>
+            <NavLink to="/dashboard">
+              <FaHome className="inline-block mr-2" />
+              Home
+            </NavLink>
+          </li>
           <li>
             <NavLink
               to="/dashboard/myParcels"
