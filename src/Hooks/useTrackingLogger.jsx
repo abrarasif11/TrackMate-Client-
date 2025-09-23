@@ -1,25 +1,30 @@
-
-import useAxiosSecure from './useAxiosSecure';
+import useAxiosSecure from "./useAxiosSecure";
 
 const useTrackingLogger = () => {
-    const axiosSecure = useAxiosSecure();
+  const axiosSecure = useAxiosSecure();
 
-    const logTracking = async ({ tracking_id, status, details, location, updated_by }) => {
-        try {
-            const payload = {
-                tracking_id,
-                status,
-                details,
-                location,
-                updated_by,
-            };
-            await axiosSecure.post("/tracking", payload);
-        } catch (error) {
-            console.error("Failed to log tracking:", error);
-        }
-    };
+  const logTracking = async ({
+    tracking_id,
+    status,
+    details,
+    location,
+    updated_by,
+  }) => {
+    try {
+      const payload = {
+        tracking_id,
+        status,
+        details,
+        location,
+        updated_by,
+      };
+      await axiosSecure.post("/tracking", payload);
+    } catch (error) {
+      console.error("Failed to log tracking:", error);
+    }
+  };
 
-    return { logTracking };
+  return { logTracking };
 };
 
 export default useTrackingLogger;
