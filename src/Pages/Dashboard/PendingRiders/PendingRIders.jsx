@@ -9,7 +9,6 @@ const PendingRiders = () => {
   const axiosSecure = useAxiosSecure();
   const [selectedRider, setSelectedRider] = useState(null);
 
-  // Fetch riders with React Query
   const {
     isPending,
     data: riders = [],
@@ -22,7 +21,7 @@ const PendingRiders = () => {
     },
   });
 
-  // Show loader
+  
   if (isPending) {
     return <Loader />;
   }
