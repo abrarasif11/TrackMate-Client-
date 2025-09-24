@@ -2,7 +2,7 @@ import React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Loader from "../../../Shared/Loader/Loader";
 import Swal from "sweetalert2";
-import axios from "axios";
+import axios from "axios"; // Replace with useAxiosSecure if you have one
 import useAuth from "../../../Hooks/useAuth";
 
 const PendingDeliveries = () => {
@@ -11,14 +11,14 @@ const PendingDeliveries = () => {
 
   // ✅ Fetch parcels assigned to this rider
   const { data: parcels = [], isLoading } = useQuery({
-    queryKey: ["riderParcels", user.email],
+    queryKey: ["riderParcels", user?.email],
+    enabled: !!user?.email,
     queryFn: async () => {
       const res = await axios.get(
-        `http://localhost:5000/riders/${user.email}/parcels`
+        `http://localhost:5000/riders/${user?.email}/parcels`
       );
       return res.data;
     },
-    enabled: !!user.email,
   });
 
   const updateStatusMutation = useMutation({
@@ -30,8 +30,8 @@ const PendingDeliveries = () => {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(["riderParcels", user.email]);
-      Swal.fire("Success", "Parcel status updated", "success");
+      queryClient.invalidateQueries(["riderParcels", user?.email]);
+      Swal.fire("✅ Success", "Parcel status updated", "success");
     },
     onError: (err) => {
       Swal.fire("❌ Error", err.message, "error");
@@ -77,10 +77,7 @@ const PendingDeliveries = () => {
           <tbody>
             {parcels.length === 0 ? (
               <tr>
-                <td
-                  colSpan="8"
-                  className="text-center py-8 text-gray-500 italic"
-                >
+                <td colSpan="9" className="text-center py-8 text-gray-500 italic">
                   🚚 No pending deliveries
                 </td>
               </tr>
@@ -94,7 +91,7 @@ const PendingDeliveries = () => {
                 >
                   <td className="px-4 py-3">{index + 1}</td>
                   <td className="px-4 py-3 font-medium text-gray-900">
-                    {parcel.parcelName}
+                    {parcel.trackingId}
                   </td>
                   <td className="px-4 py-3 font-medium text-gray-900">
                     {parcel.parcelName}
