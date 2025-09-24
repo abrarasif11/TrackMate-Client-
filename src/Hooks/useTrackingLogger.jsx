@@ -1,21 +1,22 @@
-import useAxiosSecure from "./Hooks/useAxiosSecure"; 
+import useAxiosSecure from "./useAxiosSecure";
+
 const useTrackingLogger = () => {
   const axiosSecure = useAxiosSecure();
 
   const logTracking = async ({
-    tracking_id,
-    status,
+    trackingId,
+    deliveryStatus,
     details,
-    location,
-    updated_by,
+    deliveryInstruction,
+    createdAt,
   }) => {
     try {
       const payload = {
-        tracking_id,
-        status,
+        trackingId,
+        deliveryStatus,
         details,
-        location,
-        updated_by,
+        deliveryInstruction,
+        createdAt,
       };
       await axiosSecure.post("/tracking", payload);
     } catch (error) {

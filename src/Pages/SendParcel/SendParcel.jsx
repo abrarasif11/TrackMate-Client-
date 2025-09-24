@@ -22,7 +22,7 @@ const SendParcel = () => {
   const { user } = useAuth();
   const axiosSecure = useAxiosSecure();
 
-  // Prefill sender email
+  
   useEffect(() => {
     if (user?.email) setValue("senderEmail", user.email);
   }, [user, setValue]);
@@ -103,15 +103,17 @@ const SendParcel = () => {
     const pricing = computePricing(parcelType, data.parcelWeight);
     const isWithin = data.senderWarehouse === data.receiverWarehouse;
     const selected = isWithin ? pricing.within : pricing.outside;
+  
 
+    
     const parcelData = {
       ...data,
       parcelType,
       createdBy: user?.email || "unknown",
       createdAt: new Date().toISOString(),
       trackingId: generateTrackingId(),
-      status: "Pending", // booking status
-      deliveryStatus: "Processing", // NEW FIELD added
+      status: "Pending",
+      deliveryStatus: "Processing", 
     };
 
     setPriceBreak({ pricing, selected, isWithin });
