@@ -52,54 +52,44 @@ const AssignRider = () => {
   const handleConfirmAssign = async () => {
     if (!selectedRider) return;
 
-    const result = await Swal.fire({
-      title: "Confirm Assignment",
-      html: `
-        <p>Parcel: <strong>${selectedParcel.parcelName}</strong> (${selectedParcel.trackingId})</p>
-        <p>Rider: <strong>${selectedRider.name}</strong> (${selectedRider.email})</p>
-        <p>Status after assignment: <strong>Rider Assigned</strong></p>
-      `,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#CAEB66",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Assign Rider",
-    });
+    // rider info
+    const riderName = selectedRider.name || selectedRider.riderName;
+    const riderEmail = selectedRider.email || selectedRider.riderEmail;
 
-    if (result.isConfirmed) {
-      try {
-        const res = await axiosSecure.patch(
-          `/parcels/${selectedParcel._id}/assign`,
-          {
-            riderEmail: selectedRider.email,
-            riderName: selectedRider.name,
-          }
-        );
+    try {
+      const res = await axiosSecure.patch(
+        `/parcels/${selectedParcel._id}/assign`,
+        {
+          riderEmail,
+          riderName,
+        }
+      );
 
-        Swal.fire({
-          icon: "success",
-          title: "Rider Assigned!",
-          html: `
-            <p>Parcel <strong>${res.data.parcel.parcelName}</strong> has been assigned to rider <strong>${res.data.parcel.assignedRiderName}</strong>.</p>
-            <p>Assigned Rider Email: ${res.data.parcel.assignedRiderEmail}</p>
-            <p>Delivery Status: ${res.data.parcel.deliveryStatus}</p>
-          `,
-          confirmButtonColor: "#CAEB66",
-        });
+      Swal.fire({
+        icon: "success",
+        title: "Rider Assigned!",
+        html: `
+          <p>Parcel <strong>${res.data.parcel.parcelName}</strong> has been assigned to rider <strong>${res.data.parcel.assignedRiderName}</strong>.</p>
+          <p>Assigned Rider Email: ${res.data.parcel.assignedRiderEmail}</p>
+          <p>Delivery Status: ${res.data.parcel.deliveryStatus}</p>
+        `,
+        confirmButtonColor: "#CAEB66",
+      });
 
-        // Update the parcels list immediately
-        refetchParcels();
-        setSelectedParcel(null);
-        setSelectedRider(null);
-      } catch (err) {
-        console.error("Error assigning rider:", err);
-        Swal.fire({
-          icon: "error",
-          title: "Failed",
-          text: "Could not assign rider. Please try again.",
-          confirmButtonColor: "#CAEB66",
-        });
-      }
+      //  refresh parcels after assignment
+      refetchParcels();
+
+      //  reset modal selections
+      setSelectedParcel(null);
+      setSelectedRider(null);
+    } catch (err) {
+      console.error("Error assigning rider:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Failed",
+        text: "Could not assign rider. Please try again.",
+        confirmButtonColor: "#CAEB66",
+      });
     }
   };
 
