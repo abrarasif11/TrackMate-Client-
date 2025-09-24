@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import { updateProfile } from "firebase/auth";
 import useAxios from "../../../Hooks/useAxios";
 import SocialLogin from "../../../Shared/SocialLogin/SocialLogin";
+import { Eye, EyeOff } from "lucide-react"; // sleek icons
 
 const Register = () => {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ const Register = () => {
   const { createUser } = useAuth();
   const [preview, setPreview] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const onSubmit = async (data) => {
     try {
@@ -40,7 +42,7 @@ const Register = () => {
 
         const imgData = await res.json();
         if (imgData.success) {
-          imageUrl = imgData.data.url; // ImgBB URL
+          imageUrl = imgData.data.url;
           console.log("Image uploaded to ImgBB:", imageUrl);
         } else {
           console.error("ImgBB Upload Failed:", imgData);
@@ -51,10 +53,10 @@ const Register = () => {
       const userRes = await createUser(data.email, data.password);
       console.log("Firebase user created:", userRes.user);
 
-      // update user info on DB
+      // Update user info on DB
       const userInfo = {
         email: data.email,
-        role: "user", // default
+        role: "user",
         createdAt: new Date().toISOString(),
         last_log_in: new Date().toISOString(),
       };
@@ -62,21 +64,14 @@ const Register = () => {
       const userR = await axiosInstance.post("/users", userInfo);
       console.log(userR.data);
 
-      // Update displayName and photoURL in Firebase
+      // Update Firebase profile
       await updateProfile(userRes.user, {
         displayName: data.name,
         photoURL: imageUrl || null,
       });
 
-      console.log(
-        "Updated Firebase profile:",
-        userRes.user.displayName,
-        userRes.user.photoURL
-      );
-
       setUploading(false);
 
-      // Show SweetAlert2
       Swal.fire({
         title: "Registration Successful!",
         html: `
@@ -196,17 +191,30 @@ const Register = () => {
         >
           Password
         </label>
-        <input
-          type="password"
-          {...register("password", {
-            pattern:
-              /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
-            required: true,
-          })}
-          id="password"
-          placeholder="Password"
-          className="w-full mt-1 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CAEB66]"
-        />
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            {...register("password", {
+              pattern:
+                /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
+              required: true,
+            })}
+            id="password"
+            placeholder="Password"
+            className="w-full mt-1 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CAEB66]"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition"
+          >
+            {showPassword ? (
+              <EyeOff className="w-5 h-5" />
+            ) : (
+              <Eye className="w-5 h-5" />
+            )}
+          </button>
+        </div>
         {errors.password?.type === "required" && (
           <p className="text-red-700 mt-2">Password is required</p>
         )}
@@ -230,7 +238,7 @@ const Register = () => {
       {/* Already have account */}
       <p className="text-sm text-center text-gray-600">
         Already have an account?{" "}
-        <Link  to="/signIn" className="text-[#A0C948] font-medium">
+        <Link to="/signIn" className="text-[#A0C948] font-medium">
           Login
         </Link>
       </p>
