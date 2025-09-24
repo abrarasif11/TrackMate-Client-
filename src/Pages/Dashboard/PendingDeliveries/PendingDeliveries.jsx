@@ -64,6 +64,7 @@ const PendingDeliveries = () => {
           <thead className="bg-gray-200 text-gray-700 uppercase text-xs font-semibold">
             <tr>
               <th className="px-4 py-3">#</th>
+              <th className="px-4 py-3">Tracking ID</th>
               <th className="px-4 py-3">Parcel</th>
               <th className="px-4 py-3">Weight</th>
               <th className="px-4 py-3">Sender</th>
@@ -92,6 +93,9 @@ const PendingDeliveries = () => {
                   } hover:bg-gray-100`}
                 >
                   <td className="px-4 py-3">{index + 1}</td>
+                  <td className="px-4 py-3 font-medium text-gray-900">
+                    {parcel.trackingId}
+                  </td>
                   <td className="px-4 py-3 font-medium text-gray-900">
                     {parcel.parcelName}
                   </td>
