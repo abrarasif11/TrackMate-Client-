@@ -22,11 +22,11 @@ const SendParcel = () => {
   const { user } = useAuth();
   const axiosSecure = useAxiosSecure();
 
-  
   useEffect(() => {
     if (user?.email) setValue("senderEmail", user.email);
   }, [user, setValue]);
-  const navigate = useNavigate()
+
+  const navigate = useNavigate();
   const senderRegion = watch("senderRegion");
   const receiverRegion = watch("receiverRegion");
   const uniqueRegions = [...new Set(serviceCenter.map((w) => w.region))];
@@ -103,9 +103,7 @@ const SendParcel = () => {
     const pricing = computePricing(parcelType, data.parcelWeight);
     const isWithin = data.senderWarehouse === data.receiverWarehouse;
     const selected = isWithin ? pricing.within : pricing.outside;
-  
 
-    
     const parcelData = {
       ...data,
       parcelType,
@@ -113,7 +111,7 @@ const SendParcel = () => {
       createdAt: new Date().toISOString(),
       trackingId: generateTrackingId(),
       status: "Pending",
-      deliveryStatus: "Processing", 
+      deliveryStatus: "Processing",
     };
 
     setPriceBreak({ pricing, selected, isWithin });
@@ -126,20 +124,46 @@ const SendParcel = () => {
     const payload = { ...confirmData, price: priceBreak?.selected?.total ?? 0 };
 
     try {
+      // 1) Save parcel
       const res = await axiosSecure.post("/parcels", payload);
 
-      if (res.data?.success) {
-        toast.success("Parcel booked & saved successfully!", {
+      // Some backends return { success: true }, others return insertedId — handle both.
+      const saved = Boolean(res?.data?.success) || Boolean(res?.data?.insertedId);
+
+      if (saved) {
+        // 2) Create tracking log in the format your backend expects
+        try {
+          const trackingPayload = {
+            tracking_id: confirmData.trackingId, // snake_case to match backend
+            status: "SUBMITTED", // use your status enum: SUBMITTED | PAID | RIDER_ASSIGNED | PICKED_UP | DELIVERED
+            details: `Parcel submitted by ${user?.displayName || user?.email || "Unknown"}`,
+            updated_by: user?.email || "system",
+            // backend will add timestamp, but we can include it optionally
+            timestamp: new Date().toISOString(),
+          };
+
+          await axiosSecure.post("/trackings", trackingPayload);
+        } catch (trackErr) {
+          // don't block the success flow — just log
+          console.error("Failed to create initial tracking log:", trackErr);
+        }
+
+        toast.success("Parcel booked & tracking started!", {
           duration: 3000,
           position: "top-right",
         });
-        navigate("/dashboard/myParcels");
+
+        // reset UI
         reset();
         setParcelType("Document");
         setConfirmData(null);
         setPriceBreak(null);
+
+        // navigate after a short delay so user sees toast
+        navigate("/dashboard/myParcels");
       } else {
         toast.error("Failed to save parcel. Try again.");
+        console.error("Parcel save response:", res?.data);
       }
     } catch (error) {
       console.error("Save Error:", error);
@@ -324,9 +348,7 @@ const SendParcel = () => {
                   disabled={!receiverRegion}
                 >
                   <option value="">
-                    {receiverRegion
-                      ? "Select Warehouse"
-                      : "Select region first"}
+                    {receiverRegion ? "Select Warehouse" : "Select region first"}
                   </option>
                   {receiverRegion &&
                     getDistrictByRegion(receiverRegion).map((d) => (
