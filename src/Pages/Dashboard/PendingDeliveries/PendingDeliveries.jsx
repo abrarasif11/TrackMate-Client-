@@ -94,7 +94,7 @@ const PendingDeliveries = () => {
                 >
                   <td className="px-4 py-3">{index + 1}</td>
                   <td className="px-4 py-3 font-medium text-gray-900">
-                    {parcel.trackingId}
+                    {parcel.parcelName}
                   </td>
                   <td className="px-4 py-3 font-medium text-gray-900">
                     {parcel.parcelName}
