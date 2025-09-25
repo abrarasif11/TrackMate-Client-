@@ -58,7 +58,7 @@ const AssignRider = () => {
     const riderEmail = selectedRider.email || selectedRider.riderEmail;
 
     try {
-      // 1️⃣ Assign rider in parcel
+      // Assign rider in parcel
       const res = await axiosSecure.patch(
         `/parcels/${selectedParcel._id}/assign`,
         {
@@ -69,7 +69,7 @@ const AssignRider = () => {
 
       const updatedParcel = res.data.parcel;
 
-      // 2️⃣ Log tracking info
+      //  Log tracking info
       await logTracking({
         trackingId: updatedParcel.trackingId,
         status: "RIDER ASSIGNED",
@@ -89,7 +89,7 @@ const AssignRider = () => {
         confirmButtonColor: "#CAEB66",
       });
 
-      // 3️⃣ Refresh parcels
+      //  Refresh parcels
       refetchParcels();
       setSelectedParcel(null);
       setSelectedRider(null);
