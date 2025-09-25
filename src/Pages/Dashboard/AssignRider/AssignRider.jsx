@@ -9,7 +9,7 @@ const AssignRider = () => {
   const axiosSecure = useAxiosSecure();
   const [selectedParcel, setSelectedParcel] = useState(null);
   const [selectedRider, setSelectedRider] = useState(null);
-  const { logTracking } = useTrackingLogger
+  const { logTracking } = useTrackingLogger(); // Hook to log tracking info
 
   // Fetch all parcels
   const {
@@ -45,43 +45,50 @@ const AssignRider = () => {
   if (isLoading) return <Loader />;
   if (isError) return <p className="text-red-500">Failed to load parcels.</p>;
 
+  // Open modal and select parcel
   const handleAssignClick = (parcel) => {
     setSelectedParcel(parcel);
     setSelectedRider(null);
     refetchRiders();
   };
 
+  // Confirm assigning rider
   const handleConfirmAssign = async () => {
     if (!selectedRider) return;
 
-    // rider info
-    const riderName = selectedRider.name || selectedRider.riderName;
-    const riderEmail = selectedRider.email || selectedRider.riderEmail;
-
     try {
+      // Assign rider to parcel
       const res = await axiosSecure.patch(
         `/parcels/${selectedParcel._id}/assign`,
         {
-          riderEmail,
-          riderName,
+          riderEmail: selectedRider.email,
+          riderName: selectedRider.name,
         }
       );
+
+      const updatedParcel = res.data.parcel;
+
+      // Log tracking info
+      await logTracking({
+        tracking_id: selectedParcel.trackingId, // matches backend
+  status: "RIDER_ASSIGNED",               // enum value
+  details: `Rider ${selectedRider.name} (${selectedRider.email}) is assigned for this parcel.`,
+  updated_by: user?.email || "system",    // logged-in user
+  timestamp: new Date().toISOString(),    // optional, backend adds its own timestamp
+      });
 
       Swal.fire({
         icon: "success",
         title: "Rider Assigned!",
         html: `
-          <p>Parcel <strong>${res.data.parcel.parcelName}</strong> has been assigned to rider <strong>${res.data.parcel.assignedRiderName}</strong>.</p>
-          <p>Assigned Rider Email: ${res.data.parcel.assignedRiderEmail}</p>
-          <p>Delivery Status: ${res.data.parcel.deliveryStatus}</p>
+          <p>Parcel <strong>${updatedParcel.parcelName}</strong> has been assigned to rider <strong>${selectedRider.name}</strong>.</p>
+          <p>Assigned Rider Email: ${selectedRider.email}</p>
+          <p>Delivery Status: Rider Assigned</p>
         `,
         confirmButtonColor: "#CAEB66",
       });
 
-      //  refresh parcels after assignment
       refetchParcels();
-
-      //  reset modal selections
       setSelectedParcel(null);
       setSelectedRider(null);
     } catch (err) {
@@ -206,21 +213,16 @@ const AssignRider = () => {
                         </p>
                       </div>
                       {selectedRider?._id === rider._id && (
-                        <span className="text-green-600 font-bold">
-                          Selected
-                        </span>
+                        <span className="text-green-600 font-bold">Selected</span>
                       )}
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-500">
-                    No available riders in this region.
-                  </p>
+                  <p className="text-gray-500">No available riders in this region.</p>
                 )}
               </div>
             )}
 
-            {/* Show assigned rider info preview */}
             {selectedRider && (
               <div className="mt-4 p-3 border rounded bg-gray-50">
                 <p>
