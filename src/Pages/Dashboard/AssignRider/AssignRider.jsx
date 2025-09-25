@@ -3,11 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 import Loader from "../../../Shared/Loader/Loader";
 import Swal from "sweetalert2";
+import useTrackingLogger from "../../../Hooks/useTrackingLogger";
 
 const AssignRider = () => {
   const axiosSecure = useAxiosSecure();
   const [selectedParcel, setSelectedParcel] = useState(null);
   const [selectedRider, setSelectedRider] = useState(null);
+  const { logTracking } = useTrackingLogger
 
   // Fetch all parcels
   const {
