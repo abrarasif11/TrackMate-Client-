@@ -3,13 +3,17 @@ import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 import Loader from "../../../Shared/Loader/Loader";
 import Swal from "sweetalert2";
+import useTrackingLogger from "../../../Hooks/useTrackingLogger";
+import useAuth from "../../../Hooks/useAuth";
 
 const AssignRider = () => {
   const axiosSecure = useAxiosSecure();
+  const { logTracking } = useTrackingLogger();
+  const { user } = useAuth();
   const [selectedParcel, setSelectedParcel] = useState(null);
   const [selectedRider, setSelectedRider] = useState(null);
 
-  // Fetch all parcels
+  // Fetch parcels
   const {
     data: parcels = [],
     isLoading,
@@ -17,13 +21,10 @@ const AssignRider = () => {
     refetch: refetchParcels,
   } = useQuery({
     queryKey: ["parcels-for-assign"],
-    queryFn: async () => {
-      const res = await axiosSecure.get("/parcels");
-      return res.data;
-    },
+    queryFn: async () => (await axiosSecure.get("/parcels")).data,
   });
 
-  // Fetch available riders for the selected parcel region
+  // Fetch available riders
   const {
     data: availableRiders = [],
     refetch: refetchRiders,
@@ -32,10 +33,11 @@ const AssignRider = () => {
     queryKey: ["available-riders", selectedParcel?.senderRegion],
     queryFn: async () => {
       if (!selectedParcel) return [];
-      const res = await axiosSecure.get(
-        `/riders/available?region=${selectedParcel.senderRegion}`
-      );
-      return res.data;
+      return (
+        await axiosSecure.get(
+          `/riders/available?region=${selectedParcel.senderRegion}`
+        )
+      ).data;
     },
     enabled: !!selectedParcel,
   });
@@ -52,11 +54,11 @@ const AssignRider = () => {
   const handleConfirmAssign = async () => {
     if (!selectedRider) return;
 
-    // rider info
     const riderName = selectedRider.name || selectedRider.riderName;
     const riderEmail = selectedRider.email || selectedRider.riderEmail;
 
     try {
+      // 1️⃣ Assign rider in parcel
       const res = await axiosSecure.patch(
         `/parcels/${selectedParcel._id}/assign`,
         {
@@ -65,29 +67,38 @@ const AssignRider = () => {
         }
       );
 
+      const updatedParcel = res.data.parcel;
+
+      // 2️⃣ Log tracking info
+      await logTracking({
+        trackingId: updatedParcel.trackingId,
+        status: "RIDER ASSIGNED",
+        details: `Rider ${riderName} (${riderEmail}) is assigned.`,
+        deliveryInstruction: updatedParcel.deliveryInstruction || "",
+        updatedBy: user?.email || "system",
+      });
+
       Swal.fire({
         icon: "success",
         title: "Rider Assigned!",
         html: `
-          <p>Parcel <strong>${res.data.parcel.parcelName}</strong> has been assigned to rider <strong>${res.data.parcel.assignedRiderName}</strong>.</p>
-          <p>Assigned Rider Email: ${res.data.parcel.assignedRiderEmail}</p>
-          <p>Delivery Status: ${res.data.parcel.deliveryStatus}</p>
+          <p>Parcel <strong>${updatedParcel.parcelName}</strong> assigned to <strong>${riderName}</strong></p>
+          <p>Email: ${riderEmail}</p>
+          <p>Status: Rider Assigned</p>
         `,
         confirmButtonColor: "#CAEB66",
       });
 
-      //  refresh parcels after assignment
+      // 3️⃣ Refresh parcels
       refetchParcels();
-
-      //  reset modal selections
       setSelectedParcel(null);
       setSelectedRider(null);
     } catch (err) {
-      console.error("Error assigning rider:", err);
+      console.error("Error assigning rider or logging tracking:", err);
       Swal.fire({
         icon: "error",
         title: "Failed",
-        text: "Could not assign rider. Please try again.",
+        text: "Could not assign rider or log tracking. Please try again.",
         confirmButtonColor: "#CAEB66",
       });
     }
@@ -123,7 +134,7 @@ const AssignRider = () => {
             {parcels.map((parcel, idx) => (
               <tr
                 key={parcel._id}
-                className={`transition duration-200 ${
+                className={`${
                   idx % 2 === 0 ? "bg-white" : "bg-gray-100"
                 } hover:bg-[#f2ffc6]`}
               >
@@ -218,7 +229,6 @@ const AssignRider = () => {
               </div>
             )}
 
-            {/* Show assigned rider info preview */}
             {selectedRider && (
               <div className="mt-4 p-3 border rounded bg-gray-50">
                 <p>
