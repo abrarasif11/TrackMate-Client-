@@ -3,7 +3,7 @@ import React from 'react'
 const TrackParcel = () => {
   return (
     <div> 
-      Show Tracking Data
+      Show Tracking Data on UI
     </div>
   )
 }

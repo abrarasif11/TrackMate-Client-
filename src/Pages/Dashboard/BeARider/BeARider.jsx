@@ -19,7 +19,7 @@ const BeARider = () => {
     formState: { errors },
   } = useForm();
 
-  // Pre-fill email and name if user is logged in
+ 
   useEffect(() => {
     if (user?.email) {
       setValue("email", user.email);
