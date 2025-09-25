@@ -4,12 +4,12 @@ import rider from "../../../assets/assests/agent-pending.png";
 import { useLoaderData } from "react-router";
 import Swal from "sweetalert2";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
-import useAuth from "../../../Hooks/useAuth"
+import useAuth from "../../../Hooks/useAuth";
 
 const BeARider = () => {
   const serviceCenter = useLoaderData();
   const axiosSecure = useAxiosSecure();
-  const { user } = useAuth(); // Get the logged-in user
+  const { user } = useAuth();
 
   const {
     register,
@@ -19,7 +19,7 @@ const BeARider = () => {
     formState: { errors },
   } = useForm();
 
- 
+  // Prefill email & name when user is available
   useEffect(() => {
     if (user?.email) {
       setValue("email", user.email);
@@ -35,7 +35,6 @@ const BeARider = () => {
       const res = await axiosSecure.post("/riders", data);
       console.log("MongoDB Response:", res.data.insertedId);
 
-      // SweetAlert2 popup
       Swal.fire({
         title: "Application Submitted!",
         html: `
@@ -50,11 +49,14 @@ const BeARider = () => {
         icon: "success",
         confirmButtonText: "OK",
       });
-
-      // Reset the form (except email & name if you want)
       reset({
-        email: user?.email || "",
         name: user?.displayName || "",
+        email: user?.email || "",
+        age: "",
+        nid: "",
+        contact: "",
+        region: "",
+        warehouse: "",
       });
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -92,7 +94,9 @@ const BeARider = () => {
               {/* Name and Age */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Your Name</label>
+                  <label className="block text-sm font-medium mb-1">
+                    Your Name
+                  </label>
                   <input
                     type="text"
                     {...register("name", { required: true })}
@@ -100,11 +104,15 @@ const BeARider = () => {
                     placeholder="Your Name"
                   />
                   {errors.name && (
-                    <p className="text-red-500 text-sm mt-1">Name is required</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      Name is required
+                    </p>
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Your Age</label>
+                  <label className="block text-sm font-medium mb-1">
+                    Your Age
+                  </label>
                   <input
                     type="number"
                     {...register("age", { required: true })}
@@ -120,7 +128,9 @@ const BeARider = () => {
               {/* Email and Region */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Your Email</label>
+                  <label className="block text-sm font-medium mb-1">
+                    Your Email
+                  </label>
                   <input
                     type="email"
                     {...register("email", { required: true })}
@@ -129,11 +139,15 @@ const BeARider = () => {
                     readOnly={!!user?.email} // Prevent editing if already logged in
                   />
                   {errors.email && (
-                    <p className="text-red-500 text-sm mt-1">Email is required</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      Email is required
+                    </p>
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Your Region</label>
+                  <label className="block text-sm font-medium mb-1">
+                    Your Region
+                  </label>
                   <select
                     {...register("region", { required: true })}
                     className="select select-bordered w-full"
@@ -146,7 +160,9 @@ const BeARider = () => {
                     ))}
                   </select>
                   {errors.region && (
-                    <p className="text-red-500 text-sm mt-1">Region is required</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      Region is required
+                    </p>
                   )}
                 </div>
               </div>
@@ -154,7 +170,9 @@ const BeARider = () => {
               {/* NID and Contact */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">NID No</label>
+                  <label className="block text-sm font-medium mb-1">
+                    NID No
+                  </label>
                   <input
                     type="text"
                     {...register("nid", { required: true })}
@@ -166,7 +184,9 @@ const BeARider = () => {
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Contact</label>
+                  <label className="block text-sm font-medium mb-1">
+                    Contact
+                  </label>
                   <input
                     type="text"
                     {...register("contact", { required: true })}
@@ -174,7 +194,9 @@ const BeARider = () => {
                     placeholder="Contact"
                   />
                   {errors.contact && (
-                    <p className="text-red-500 text-sm mt-1">Contact is required</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      Contact is required
+                    </p>
                   )}
                 </div>
               </div>

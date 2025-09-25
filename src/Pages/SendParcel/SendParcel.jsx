@@ -128,7 +128,8 @@ const SendParcel = () => {
       const res = await axiosSecure.post("/parcels", payload);
 
       // Some backends return { success: true }, others return insertedId — handle both.
-      const saved = Boolean(res?.data?.success) || Boolean(res?.data?.insertedId);
+      const saved =
+        Boolean(res?.data?.success) || Boolean(res?.data?.insertedId);
 
       if (saved) {
         // 2) Create tracking log in the format your backend expects
@@ -136,7 +137,9 @@ const SendParcel = () => {
           const trackingPayload = {
             tracking_id: confirmData.trackingId, // snake_case to match backend
             status: "SUBMITTED", // use your status enum: SUBMITTED | PAID | RIDER_ASSIGNED | PICKED_UP | DELIVERED
-            details: `Parcel submitted by ${user?.displayName || user?.email || "Unknown"}`,
+            details: `Parcel submitted by ${
+              user?.displayName || user?.email || "Unknown"
+            }`,
             updated_by: user?.email || "system",
             // backend will add timestamp, but we can include it optionally
             timestamp: new Date().toISOString(),
@@ -348,7 +351,9 @@ const SendParcel = () => {
                   disabled={!receiverRegion}
                 >
                   <option value="">
-                    {receiverRegion ? "Select Warehouse" : "Select region first"}
+                    {receiverRegion
+                      ? "Select Warehouse"
+                      : "Select region first"}
                   </option>
                   {receiverRegion &&
                     getDistrictByRegion(receiverRegion).map((d) => (

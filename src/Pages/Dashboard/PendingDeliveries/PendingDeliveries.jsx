@@ -34,7 +34,7 @@ const PendingDeliveries = () => {
     },
     onSuccess: async (updatedParcel) => {
       queryClient.invalidateQueries(["riderParcels", user?.email]);
-      Swal.fire("✅ Success", "Parcel status updated", "success");
+      Swal.fire(" Success", "Parcel status updated", "success");
 
       // 
       let details = "";
