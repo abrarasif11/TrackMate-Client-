@@ -18,7 +18,7 @@ const useTrackingLogger = () => {
         deliveryInstruction,
         createdAt,
       };
-      await axiosSecure.post("/tracking", payload);
+      await axiosSecure.post("/trackings", payload);
     } catch (error) {
       console.error("Failed to log tracking:", error);
     }

@@ -16,7 +16,7 @@ const PaymentForm = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Fetch parcel safely
+  
   const {
     isPending,
     isError,
@@ -51,7 +51,7 @@ const PaymentForm = () => {
     if (!card) return;
 
     try {
-      // Create Payment Intent
+      
       const res = await axiosSecure.post("/create-payment-intent", {
         amountInCents,
         id,
@@ -87,10 +87,10 @@ const PaymentForm = () => {
         );
 
         if (confirmRes.data?._id) {
-          // ✅ Use parcelInfo.trackingId (camelCase in frontend)
+          // Use parcelInfo.trackingId (camelCase in frontend)
           const trackingId = parcelInfo?.trackingId || id;
 
-          // ✅ Map camelCase → snake_case for backend
+          // Map camelCase → snake_case for backend
           await axiosSecure.post("/trackings", {
             tracking_id: trackingId,
             status: "Payment Successful",
