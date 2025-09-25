@@ -13,7 +13,7 @@ const PaymentForm = () => {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState("");
-  const navigate = useNavigate(); // ✅ navigation hook
+  const navigate = useNavigate(); 
 
   //  Fetch parcel safely
   const {
@@ -51,7 +51,7 @@ const PaymentForm = () => {
     const card = elements.getElement(CardElement);
     if (!card) return;
 
-    // 1️⃣ Create Stripe Payment Method
+    // Create Stripe Payment Method
     const { error: stripeError, paymentMethod } =
       await stripe.createPaymentMethod({
         type: "card",
@@ -67,7 +67,7 @@ const PaymentForm = () => {
     console.log("Payment Method:", paymentMethod);
 
     try {
-      // 2️⃣ Create Payment Intent from backend
+      // Create Payment Intent from backend
       const res = await axiosSecure.post("/create-payment-intent", {
         amountInCents,
         id,
@@ -75,7 +75,7 @@ const PaymentForm = () => {
 
       const clientSecret = res.data.clientSecret;
 
-      // 3️⃣ Confirm payment with Stripe
+      // Confirm payment with Stripe
       const result = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card,
@@ -93,7 +93,7 @@ const PaymentForm = () => {
         console.log(" Payment Successful");
         console.log(result);
 
-        // 4️⃣ Save payment to backend
+        // Save payment to backend
         const paymentData = {
           parcelId: id,
           paymentIntentId: result.paymentIntent.id,
@@ -104,9 +104,8 @@ const PaymentForm = () => {
         const confirmRes = await axiosSecure.post("/confirm-payment", paymentData);
 
         if (confirmRes.data?._id) {
-          //  SweetAlert2 Popup
           Swal.fire({
-            title: "🎉 Payment Successful!",
+            title: " Payment Successful!",
             text: `Transaction ID: ${result.paymentIntent.id}`,
             icon: "success",
             confirmButtonText: "Go to My Parcels",
