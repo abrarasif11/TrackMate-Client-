@@ -16,7 +16,7 @@ const PaymentForm = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Fetch parcel info
+  // Fetch parcel safely
   const {
     isPending,
     isError,
@@ -36,7 +36,8 @@ const PaymentForm = () => {
   });
 
   if (isPending) return <Loader />;
-  if (isError) return <p className="text-red-500">Error: {queryError.message}</p>;
+  if (isError)
+    return <p className="text-red-500">Error: {queryError.message}</p>;
   if (!parcelInfo) return <p className="text-red-500">Parcel not found.</p>;
 
   const amount = parcelInfo?.price ?? 0;
@@ -50,7 +51,7 @@ const PaymentForm = () => {
     if (!card) return;
 
     try {
-      // ✅ Create Payment Intent
+      // Create Payment Intent
       const res = await axiosSecure.post("/create-payment-intent", {
         amountInCents,
         id,
@@ -58,7 +59,7 @@ const PaymentForm = () => {
 
       const clientSecret = res.data.clientSecret;
 
-      // ✅ Confirm payment
+      // Confirm payment
       const result = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card,
@@ -72,7 +73,7 @@ const PaymentForm = () => {
       if (result.error) {
         setError(result.error.message);
       } else if (result.paymentIntent.status === "succeeded") {
-        // ✅ Save payment to backend
+        // Save payment to backend
         const paymentData = {
           parcelId: id,
           paymentIntentId: result.paymentIntent.id,
@@ -80,13 +81,16 @@ const PaymentForm = () => {
           createdBy: user.email,
         };
 
-        const confirmRes = await axiosSecure.post("/confirm-payment", paymentData);
+        const confirmRes = await axiosSecure.post(
+          "/confirm-payment",
+          paymentData
+        );
 
         if (confirmRes.data?._id) {
-          // ✅ Safe fallback if tracking_id missing
-          const trackingId = parcelInfo?.tracking_id || id;
+          // ✅ Use parcelInfo.trackingId (camelCase in frontend)
+          const trackingId = parcelInfo?.trackingId || id;
 
-          // ✅ Log tracking info to backend
+          // ✅ Map camelCase → snake_case for backend
           await axiosSecure.post("/trackings", {
             tracking_id: trackingId,
             status: "Payment Successful",
