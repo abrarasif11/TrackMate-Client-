@@ -2,14 +2,16 @@ import React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Loader from "../../../Shared/Loader/Loader";
 import Swal from "sweetalert2";
-import axios from "axios"; // Replace with useAxiosSecure if you have one
+import axios from "axios"; 
 import useAuth from "../../../Hooks/useAuth";
+import useTrackingLogger from "../../../Hooks/useTrackingLogger";
 
 const PendingDeliveries = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { logTracking } = useTrackingLogger();
 
-  // ✅ Fetch parcels assigned to this rider
+  // Fetch parcels assigned to this rider
   const { data: parcels = [], isLoading } = useQuery({
     queryKey: ["riderParcels", user?.email],
     enabled: !!user?.email,
@@ -21,6 +23,7 @@ const PendingDeliveries = () => {
     },
   });
 
+  
   const updateStatusMutation = useMutation({
     mutationFn: async ({ parcelId, status }) => {
       const res = await axios.patch(
@@ -29,16 +32,35 @@ const PendingDeliveries = () => {
       );
       return res.data;
     },
-    onSuccess: () => {
+    onSuccess: async (updatedParcel) => {
       queryClient.invalidateQueries(["riderParcels", user?.email]);
       Swal.fire("✅ Success", "Parcel status updated", "success");
+
+      // 
+      let details = "";
+      if (updatedParcel.deliveryStatus === "In Transit") {
+        details = `Picked up by ${user.displayName || user.email}`;
+      } else if (updatedParcel.deliveryStatus === "Delivered") {
+        details = `Delivered by ${user.displayName || user.email}`;
+      }
+
+      try {
+        await logTracking({
+          tracking_id: updatedParcel.trackingId,
+          status: updatedParcel.deliveryStatus,
+          details,
+          updated_by: user.email,
+        });
+      } catch (err) {
+        console.error("Failed to log tracking:", err);
+      }
     },
     onError: (err) => {
-      Swal.fire("❌ Error", err.message, "error");
+      Swal.fire(" Error", err.message, "error");
     },
   });
 
-  const handleStatusChange = (parcelId, newStatus) => {
+  const handleStatusChange = (parcel, newStatus) => {
     Swal.fire({
       title: `Mark as ${newStatus}?`,
       icon: "question",
@@ -47,7 +69,7 @@ const PendingDeliveries = () => {
       confirmButtonText: "Yes",
     }).then((result) => {
       if (result.isConfirmed) {
-        updateStatusMutation.mutate({ parcelId, status: newStatus });
+        updateStatusMutation.mutate({ parcelId: parcel._id, status: newStatus });
       }
     });
   };
@@ -97,18 +119,8 @@ const PendingDeliveries = () => {
                     {parcel.parcelName}
                   </td>
                   <td className="px-4 py-3">{parcel.parcelWeight} kg</td>
-                  <td className="px-4 py-3">
-                    <div>{parcel.senderName}</div>
-                    <div className="text-xs text-gray-500">
-                      {parcel.senderRegion}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div>{parcel.receiverName}</div>
-                    <div className="text-xs text-gray-500">
-                      {parcel.receiverRegion}
-                    </div>
-                  </td>
+                  <td className="px-4 py-3">{parcel.senderName}</td>
+                  <td className="px-4 py-3">{parcel.receiverName}</td>
                   <td className="px-4 py-3 font-semibold text-gray-800">
                     {parcel.price}৳
                   </td>
@@ -128,9 +140,7 @@ const PendingDeliveries = () => {
                   <td className="px-4 py-3 space-x-2">
                     {parcel.deliveryStatus === "Rider Assigned" && (
                       <button
-                        onClick={() =>
-                          handleStatusChange(parcel._id, "In Transit")
-                        }
+                        onClick={() => handleStatusChange(parcel, "In Transit")}
                         className="px-3 py-1 rounded-md text-sm font-medium bg-[#CAEB66] text-black hover:scale-105 transition shadow"
                       >
                         Mark Picked Up
@@ -138,9 +148,7 @@ const PendingDeliveries = () => {
                     )}
                     {parcel.deliveryStatus === "In Transit" && (
                       <button
-                        onClick={() =>
-                          handleStatusChange(parcel._id, "Delivered")
-                        }
+                        onClick={() => handleStatusChange(parcel, "Delivered")}
                         className="px-3 py-1 rounded-md text-sm font-medium bg-[#CAEB66] text-black hover:scale-105 transition shadow"
                       >
                         Mark Delivered
