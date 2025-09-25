@@ -5,18 +5,18 @@ const useTrackingLogger = () => {
 
   const logTracking = async ({
     trackingId,
-    deliveryStatus,
+    status,
     details,
     deliveryInstruction,
-    createdAt,
+    updatedBy,
   }) => {
     try {
       const payload = {
-        trackingId,
-        deliveryStatus,
+        tracking_id: trackingId,
+        status,
         details,
         deliveryInstruction,
-        createdAt,
+        updated_by: updatedBy,
       };
       await axiosSecure.post("/trackings", payload);
     } catch (error) {
