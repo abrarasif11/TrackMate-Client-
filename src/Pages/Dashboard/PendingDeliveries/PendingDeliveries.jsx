@@ -35,18 +35,20 @@ const PendingDeliveries = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries(["riderParcels", user?.email]);
-      Swal.fire("Success", "Parcel status updated", "success");
+      Swal.fire(" Success", "Parcel status updated", "success");
 
-      // log tracking after status change
-      logTracking({
-        trackingId: data.parcel.trackingId,
-        status: data.status,
-        details: `Parcel picked up by ${user.displayName}`,
-        updatedBy: user?.email || "system",
-      });
+      // log tracking for both In Transit & Delivered
+      if (data.status === "In Transit" || data.status === "Delivered") {
+        logTracking({
+          trackingId: data.parcel.trackingId,
+          status: data.status,
+          details: `Parcel marked as ${data.status}`,
+          updatedBy: user?.email || "system",
+        });
+      }
     },
     onError: (err) => {
-      Swal.fire("Error", err.message, "error");
+      Swal.fire(" Error", err.message, "error");
     },
   });
 
