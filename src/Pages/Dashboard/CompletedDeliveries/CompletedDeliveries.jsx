@@ -7,19 +7,18 @@ const CompletedDeliveries = () => {
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const email = user?.email;
 
+  // ✅ Fetch completed deliveries
   const { data: parcels = [], isLoading } = useQuery({
-    queryKey: ["completedDeliveries", email],
-    enabled: !!email,
+    queryKey: ["completedDeliveries", user?.email], // user.email in key so cache refreshes when rider changes
     queryFn: async () => {
-      const res = await axiosSecure.get(
-        `/rider/completed-parcels?email=${email}`
-      );
+      const res = await axiosSecure.get("/rider/completed-parcels");
       return res.data;
     },
+    enabled: !!user?.email, // only fetch if logged in
   });
 
+  // ✅ Calculate earnings
   const calculateEarning = (parcel) => {
     const price = Number(parcel.price);
     return parcel.sender_center === parcel.receiver_center
@@ -27,7 +26,7 @@ const CompletedDeliveries = () => {
       : price * 0.3;
   };
 
-  // Mutation for cashout
+  // ✅ Mutation for cashout
   const { mutateAsync: cashout } = useMutation({
     mutationFn: async (parcelId) => {
       const res = await axiosSecure.patch(`/parcels/${parcelId}/cashout`);
@@ -38,6 +37,7 @@ const CompletedDeliveries = () => {
     },
   });
 
+  // ✅ Handle cashout with confirmation
   const handleCashout = (parcelId) => {
     Swal.fire({
       title: "Confirm Cashout",
