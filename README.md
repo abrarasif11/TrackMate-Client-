@@ -22,7 +22,7 @@
 ## ✨ Key Features
 
 - 📦 **Smart Parcel Booking & Real-time Tracking**
-- 🔐 **OTP-secured Deliveries**
+<!-- - 🔐 **OTP-secured Deliveries** -->
 - 🛠 **Role-based Access & Workflows** (Admin, Dispatcher, Rider, Customer)
 - 🌐 **Nationwide Coverage** (64 districts)
 - 📊 **Automated Pricing & Transparent Commission**
@@ -31,7 +31,7 @@
 
 ---
 
-## 🖼️ Screenshots
+<!-- ## 🖼️ Screenshots
 
 <p align="center">
   <img src="./assets/preview-home.png" width="800" alt="TrackMate Home"/>
@@ -39,9 +39,8 @@
 
 <p align="center">
   <img src="./assets/preview-map.png" width="800" alt="TrackMate Coverage"/>
-</p>
+</p> -->
 
----
 
 ## 🏗️ Tech Stack
 
