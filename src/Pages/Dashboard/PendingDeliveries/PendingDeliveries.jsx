@@ -17,7 +17,7 @@ const PendingDeliveries = () => {
     enabled: !!user?.email,
     queryFn: async () => {
       const res = await axios.get(
-        `http://localhost:5000/riders/${user?.email}/parcels`
+        `https://trackmate-server-neon.vercel.app/riders/${user?.email}/parcels`
       );
       return res.data;
     },
@@ -27,7 +27,7 @@ const PendingDeliveries = () => {
   const updateStatusMutation = useMutation({
     mutationFn: async ({ parcel, status }) => {
       const res = await axios.patch(
-        `http://localhost:5000/parcels/${parcel._id}/status`,
+        `https://trackmate-server-neon.vercel.app/parcels/${parcel._id}/status`,
         { status }
       );
       // return parcel + status for tracking logs

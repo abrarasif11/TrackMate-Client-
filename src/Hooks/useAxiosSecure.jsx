@@ -3,7 +3,7 @@ import useAuth from "../Hooks/useAuth";
 import { useNavigate } from "react-router";
 
 const axiosSecure = axios.create({
-  baseURL: `http://localhost:5000`,
+  baseURL: `https://trackmate-server-neon.vercel.app`,
 });
 const useAxiosSecure = () => {
   const navigate = useNavigate();
