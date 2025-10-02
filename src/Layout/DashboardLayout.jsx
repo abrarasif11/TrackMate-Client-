@@ -16,9 +16,10 @@ import {
 } from "react-icons/fa";
 import { FiMapPin } from "react-icons/fi";
 import useUserRole from "../Hooks/useUserRole";
+import Loader from "../Shared/Loader/Loader";
 const DashboardLayout = () => {
   const { role, roleLoading } = useUserRole();
-  if (roleLoading) return <p>Loading...</p>;
+  if (roleLoading) return <Loader />;
   console.log("Current user role:", role);
   console.log(role);
   return (

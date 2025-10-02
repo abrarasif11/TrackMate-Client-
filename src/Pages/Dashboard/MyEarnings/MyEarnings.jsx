@@ -1,8 +1,15 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { startOfDay, startOfWeek, startOfMonth, startOfYear, isAfter } from "date-fns";
+import {
+  startOfDay,
+  startOfWeek,
+  startOfMonth,
+  startOfYear,
+  isAfter,
+} from "date-fns";
 import useAuth from "../../../Hooks/useAuth";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import Loader from "../../../Shared/Loader/Loader";
 
 const periods = ["Today", "Week", "Month", "Year", "Overall"];
 
@@ -15,14 +22,18 @@ const MyEarnings = () => {
     queryKey: ["completedDeliveries", email],
     enabled: !!email,
     queryFn: async () => {
-      const res = await axiosSecure.get(`/rider/completed-parcels?email=${email}`);
+      const res = await axiosSecure.get(
+        `/rider/completed-parcels?email=${email}`
+      );
       return res.data || [];
     },
   });
 
   const calculateEarning = (parcel) => {
     const price = Number(parcel.price) || 0;
-    return parcel.sender_center === parcel.receiver_center ? price * 0.8 : price * 0.3;
+    return parcel.sender_center === parcel.receiver_center
+      ? price * 0.8
+      : price * 0.3;
   };
 
   const now = new Date();
@@ -44,9 +55,11 @@ const MyEarnings = () => {
     else totalPending += earning;
 
     if (deliveredAt) {
-      if (isAfter(deliveredAt, todayStart)) earningsByPeriod["Today"] += earning;
+      if (isAfter(deliveredAt, todayStart))
+        earningsByPeriod["Today"] += earning;
       if (isAfter(deliveredAt, weekStart)) earningsByPeriod["Week"] += earning;
-      if (isAfter(deliveredAt, monthStart)) earningsByPeriod["Month"] += earning;
+      if (isAfter(deliveredAt, monthStart))
+        earningsByPeriod["Month"] += earning;
       if (isAfter(deliveredAt, yearStart)) earningsByPeriod["Year"] += earning;
     }
 
@@ -79,22 +92,28 @@ const MyEarnings = () => {
       <h2 className="text-2xl font-bold">My Earnings</h2>
 
       {isLoading ? (
-        <p>Loading...</p>
+        <Loader />
       ) : (
         <>
           {/* Top Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-green-100 p-4 rounded-xl shadow hover:scale-105 transition-transform">
               <p className="text-lg font-semibold">Total Earnings</p>
-              <p className="text-2xl font-bold text-green-600">৳{total.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-green-600">
+                ৳{total.toFixed(2)}
+              </p>
             </div>
             <div className="bg-blue-100 p-4 rounded-xl shadow hover:scale-105 transition-transform">
               <p className="text-lg font-semibold">Cashed Out</p>
-              <p className="text-2xl font-bold text-blue-600">৳{totalCashedOut.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-blue-600">
+                ৳{totalCashedOut.toFixed(2)}
+              </p>
             </div>
             <div className="bg-yellow-100 p-4 rounded-xl shadow hover:scale-105 transition-transform">
               <p className="text-lg font-semibold">Pending</p>
-              <p className="text-2xl font-bold text-yellow-600">৳{totalPending.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-yellow-600">
+                ৳{totalPending.toFixed(2)}
+              </p>
             </div>
           </div>
 
@@ -137,20 +156,27 @@ const MyEarnings = () => {
               <tbody>
                 {filteredParcels.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="text-center py-4 italic text-gray-400">
+                    <td
+                      colSpan={4}
+                      className="text-center py-4 italic text-gray-400"
+                    >
                       No earnings in this period.
                     </td>
                   </tr>
                 ) : (
                   filteredParcels.map((p) => (
                     <tr key={p._id} className="border-b">
-                      <td className="px-4 py-2">{p.parcelName || "Unnamed Parcel"}</td>
+                      <td className="px-4 py-2">
+                        {p.parcelName || "Unnamed Parcel"}
+                      </td>
                       <td className="px-4 py-2">
                         {p.delivered_at
                           ? new Date(p.delivered_at).toLocaleString()
                           : "Not Delivered"}
                       </td>
-                      <td className="px-4 py-2">৳{calculateEarning(p).toFixed(2)}</td>
+                      <td className="px-4 py-2">
+                        ৳{calculateEarning(p).toFixed(2)}
+                      </td>
                       <td className="px-4 py-2 capitalize">
                         {(p.cashout_status || "pending").replace("_", " ")}
                       </td>
