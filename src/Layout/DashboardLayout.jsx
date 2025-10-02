@@ -17,6 +17,7 @@ import {
 import { FiMapPin } from "react-icons/fi";
 import useUserRole from "../Hooks/useUserRole";
 import Loader from "../Shared/Loader/Loader";
+
 const DashboardLayout = () => {
   const { role, roleLoading } = useUserRole();
   if (roleLoading) return <Loader />;
@@ -112,7 +113,7 @@ const DashboardLayout = () => {
             </NavLink>
           </li>
 
-          <li>
+          {/* <li>
             <NavLink
               to="/dashboard/profile"
               className={({ isActive }) =>
@@ -124,7 +125,7 @@ const DashboardLayout = () => {
               <FaUserEdit className="w-5 h-5" />
               Update Profile
             </NavLink>
-          </li>
+          </li> */}
           {/* Riders Link */}
           {!roleLoading && role === "rider" && (
             <>
