@@ -7,6 +7,7 @@ import { Eye, CreditCard, Trash2 } from "lucide-react";
 import Swal from "sweetalert2"; // SweetAlert2
 import "sweetalert2/dist/sweetalert2.min.css";
 import { useNavigate } from "react-router";
+import Loader from "../../../Shared/Loader/Loader";
 
 const MyParcels = () => {
   const { user } = useAuth();
@@ -14,8 +15,12 @@ const MyParcels = () => {
   const navigate = useNavigate();
   const [selectedParcel, setSelectedParcel] = useState(null);
 
-  // ✅ Fetch parcels only when user.email exists
-  const { data: parcels = [], refetch, isLoading } = useQuery({
+  //  Fetch parcels only when user.email exists
+  const {
+    data: parcels = [],
+    refetch,
+    isLoading,
+  } = useQuery({
     queryKey: ["my-parcels", user?.email],
     enabled: !!user?.email,
     queryFn: async () => {
@@ -78,7 +83,7 @@ const MyParcels = () => {
       {/* Loading State */}
       {isLoading ? (
         <div className="flex justify-center items-center py-10 text-white">
-          Loading parcels...
+          <Loader />
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -108,10 +113,7 @@ const MyParcels = () => {
             <tbody>
               {parcels.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan="6"
-                    className="text-center py-6 text-gray-500"
-                  >
+                  <td colSpan="6" className="text-center py-6 text-gray-500">
                     No parcels found
                   </td>
                 </tr>
@@ -127,9 +129,7 @@ const MyParcels = () => {
                     <td className="px-6 py-4 text-sm">
                       {parcel.parcelType || "N/A"}
                     </td>
-                    <td className="px-6 py-4 text-sm">
-                      {parcel.price || 0} ৳
-                    </td>
+                    <td className="px-6 py-4 text-sm">{parcel.price || 0} ৳</td>
                     <td className="px-6 py-4">
                       <span
                         className={`px-3 py-1 text-xs font-semibold rounded-full ${
@@ -153,8 +153,7 @@ const MyParcels = () => {
                       >
                         <Eye className="w-5 h-5" />
                       </button>
-                      {(parcel.status || "Unpaid").toLowerCase() !==
-                        "paid" && (
+                      {(parcel.status || "Unpaid").toLowerCase() !== "paid" && (
                         <button
                           onClick={() => handlePay(parcel._id)}
                           className="text-[#CAEB66] hover:text-black"
@@ -185,29 +184,24 @@ const MyParcels = () => {
               Parcel Details
             </h3>
             <p>
-              <strong>Name:</strong>{" "}
-              {selectedParcel.parcelName || "N/A"}
+              <strong>Name:</strong> {selectedParcel.parcelName || "N/A"}
             </p>
             <p>
-              <strong>Weight:</strong>{" "}
-              {selectedParcel.parcelWeight || "N/A"} KG
+              <strong>Weight:</strong> {selectedParcel.parcelWeight || "N/A"} KG
             </p>
             <p>
-              <strong>Sender:</strong>{" "}
-              {selectedParcel.senderName || "N/A"} (
+              <strong>Sender:</strong> {selectedParcel.senderName || "N/A"} (
               {selectedParcel.senderRegion || "N/A"})
             </p>
             <p>
-              <strong>Receiver:</strong>{" "}
-              {selectedParcel.receiverName || "N/A"} (
-              {selectedParcel.receiverRegion || "N/A"})
+              <strong>Receiver:</strong> {selectedParcel.receiverName || "N/A"}{" "}
+              ({selectedParcel.receiverRegion || "N/A"})
             </p>
             <p>
               <strong>Status:</strong>{" "}
               <span
                 className={`px-2 py-1 rounded-full font-semibold ${
-                  (selectedParcel.status || "Unpaid").toLowerCase() ===
-                  "paid"
+                  (selectedParcel.status || "Unpaid").toLowerCase() === "paid"
                     ? "bg-[#CAEB66] text-black"
                     : "bg-black text-white"
                 }`}

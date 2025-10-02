@@ -170,7 +170,7 @@ const SendParcel = () => {
       }
     } catch (error) {
       console.error("Save Error:", error);
-      toast.error("⚠️ Error saving parcel. Check console.");
+      toast.error(" Error saving parcel. Check console.");
     }
   };
 
