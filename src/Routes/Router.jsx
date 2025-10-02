@@ -24,6 +24,7 @@ import PendingDeliveries from "../Pages/Dashboard/PendingDeliveries/PendingDeliv
 import CompletedDeliveries from "../Pages/Dashboard/CompletedDeliveries/CompletedDeliveries";
 import MyEarnings from "../Pages/Dashboard/MyEarnings/MyEarnings";
 import DashboardHome from "../Pages/Dashboard/DashboardHome/DashboardHome";
+import ForgetPassword from "../Pages/Authentication/ForgetPassword/ForgetPassword";
 
 export const router = createBrowserRouter([
   {
@@ -75,6 +76,10 @@ export const router = createBrowserRouter([
         path: "register",
         element: <Register />,
       },
+      {
+        path: "forgetPass",
+        element: <ForgetPassword />,
+      },
     ],
   },
   {
@@ -86,8 +91,8 @@ export const router = createBrowserRouter([
     ),
     children: [
       {
-        index : true,
-        Component : DashboardHome
+        index: true,
+        Component: DashboardHome,
       },
       {
         path: "myParcels",
@@ -130,7 +135,7 @@ export const router = createBrowserRouter([
           </RiderRoutes>
         ),
       },
-      // Admin Route 
+      // Admin Route
       {
         path: "assignRider",
         element: (
