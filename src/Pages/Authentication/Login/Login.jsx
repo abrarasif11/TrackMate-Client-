@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useLocation, useNavigate } from "react-router";
-import { Eye, EyeOff } from "lucide-react"; // premium sleek icons
+import { Eye, EyeOff } from "lucide-react"; 
 import useAuth from "../../../Hooks/useAuth";
 
 const Login = () => {

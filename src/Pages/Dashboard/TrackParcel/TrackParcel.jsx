@@ -1,90 +1,104 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
-import useAuth from "../../../Hooks/useAuth";
 
-const TrackParcel = () => {
-  const { user } = useAuth(); // get logged-in user
-  const email = user?.email;
+
+const TrackingPage = () => {
+  const { trackingId: trackingIdFromUrl } = useParams();
+  const [trackingId, setTrackingId] = useState(trackingIdFromUrl || "");
   const axiosSecure = useAxiosSecure();
 
-  const [trackingData, setTrackingData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  // Fetch tracking updates using React Query v5 object syntax
+  const {
+    data: updates = [],
+    refetch,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["tracking", trackingId],
+    queryFn: async () => {
+      if (!trackingId) return [];
+      const res = await axiosSecure.get(`/trackings/${trackingId}`);
+      return res.data;
+    },
+    enabled: !!trackingId, // only fetch if trackingId exists
+  });
 
-  useEffect(() => {
-    const fetchTracking = async () => {
-      if (!email) {
-        setError("User not logged in");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const res = await axiosSecure.get(`/trackings/user/${email}`);
-        if (!Array.isArray(res.data)) {
-          setTrackingData([]);
-          setError("Invalid data from backend");
-          return;
-        }
-
-        // Normalize MongoDB timestamp
-        const formattedData = res.data
-          .map((item) => ({
-            ...item,
-            timestamp: item.timestamp?.$date?.$numberLong
-              ? Number(item.timestamp.$date.$numberLong)
-              : new Date(item.timestamp).getTime(),
-          }))
-          .sort((a, b) => a.timestamp - b.timestamp);
-
-        setTrackingData(formattedData);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to fetch tracking data.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTracking();
-  }, [email, axiosSecure]);
-
-  if (loading) return <p>Loading tracking data...</p>;
-  if (error) return <p>{error}</p>;
-  if (trackingData.length === 0) return <p>No tracking updates found.</p>;
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const id = e.target.trackingId.value.trim();
+    if (id) {
+      setTrackingId(id);
+      refetch(); // refetch data for new trackingId
+    }
+  };
 
   return (
-    <div className="p-6 max-w-lg mx-auto bg-white shadow rounded">
-      <h2 className="text-xl font-bold mb-4">Your Tracking History</h2>
-      <ul className="space-y-4">
-        {trackingData.map((item, index) => (
-          <li
-            key={index}
-            className="border-l-4 border-blue-500 pl-4 py-2 bg-gray-50 rounded"
+    <div className="p-6 max-w-3xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4 text-[#FA2A3B]">Track Parcel</h1>
+
+      {/* Search Box */}
+      <form onSubmit={handleSearch} className="mb-6 flex gap-2">
+        <input
+          name="trackingId"
+          placeholder="Enter Tracking ID"
+          className="border p-2 rounded flex-1"
+          defaultValue={trackingIdFromUrl || ""}
+        />
+        <button
+          type="submit"
+          className="bg-[#FA2A3B] text-white px-4 py-2 rounded"
+        >
+          Search
+        </button>
+      </form>
+
+      {/* Loading / Error */}
+      {isLoading && <p>Loading...</p>}
+      {isError && (
+        <p className="text-red-500">
+          Error fetching tracking updates. Make sure the ID is correct.
+        </p>
+      )}
+
+      {/* Tracking Updates */}
+      <div className="space-y-4">
+        {updates.map((update) => (
+          <div
+            key={update._id}
+            className="p-4 border rounded shadow-sm bg-white"
           >
             <p>
-              <strong>Status:</strong> {item.status}
+              <strong>Status:</strong> {update.status}
             </p>
             <p>
-              <strong>Details:</strong> {item.details}
+              <strong>Details:</strong> {update.details}
             </p>
-            {item.deliveryInstruction && (
+            {update.deliveryInstruction && (
               <p>
                 <strong>Delivery Instruction:</strong>{" "}
-                {item.deliveryInstruction}
+                {update.deliveryInstruction}
               </p>
             )}
             <p>
-              <strong>Updated By:</strong> {item.updated_by}
+              <strong>Updated By:</strong> {update.updated_by}
             </p>
-            <p className="text-sm text-gray-500">
-              {new Date(item.timestamp).toLocaleString()}
+            <p>
+              <strong>Time:</strong>{" "}
+              {new Date(update.timestamp).toLocaleString()}
             </p>
-          </li>
+          </div>
         ))}
-      </ul>
+
+        {updates.length === 0 && !isLoading && trackingId && (
+          <p className="text-gray-500">
+            No updates found for this tracking ID.
+          </p>
+        )}
+      </div>
     </div>
   );
 };
 
-export default TrackParcel;
+export default TrackingPage;

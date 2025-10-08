@@ -1,7 +1,3 @@
-// src/Pages/Coverage/Coverage.jsx
-
-
-
 import "leaflet/dist/leaflet.css";
 import { useLoaderData } from "react-router";
 import BangladeshMap from "./BangladeshMap";
