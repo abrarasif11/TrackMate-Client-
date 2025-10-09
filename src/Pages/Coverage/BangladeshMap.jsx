@@ -2,8 +2,21 @@ import React, { useState } from "react";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import { Search } from "lucide-react";
 import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 
-// FlyToDistrict helper
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
+
+delete L.Icon.Default.prototype._getIconUrl;
+
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+});
+
+
 function FlyToDistrict({ coords }) {
   const map = useMap();
   if (coords) {
@@ -17,13 +30,11 @@ const BangladeshMap = ({ serviceCenter }) => {
   const [activeCoords, setActiveCoords] = useState(null);
   const [activeDistrict, setActiveDistrict] = useState(null);
 
-  // Handle search submit
   const handleSearch = (e) => {
     e.preventDefault();
 
     if (!searchText.trim()) return;
 
-    // Case-insensitive district search
     const district = serviceCenter.find((d) =>
       d.district.toLowerCase().includes(searchText.toLowerCase())
     );
@@ -36,7 +47,6 @@ const BangladeshMap = ({ serviceCenter }) => {
     }
   };
 
-  // Center of Bangladesh
   const bangladeshPosition = [23.685, 90.3563];
 
   return (
@@ -45,12 +55,9 @@ const BangladeshMap = ({ serviceCenter }) => {
       <form onSubmit={handleSearch}>
         <div className="w-full max-w-xl mb-10">
           <div className="flex items-center bg-slate-100 rounded-full shadow-sm overflow-hidden">
-            {/* Search Icon */}
             <span className="pl-4 text-gray-500">
               <Search size={20} />
             </span>
-
-            {/* Input */}
             <input
               type="text"
               placeholder="Search district..."
@@ -58,8 +65,6 @@ const BangladeshMap = ({ serviceCenter }) => {
               onChange={(e) => setSearchText(e.target.value)}
               className="flex-grow bg-transparent outline-none px-3 py-3 text-gray-700 placeholder-gray-400"
             />
-
-            {/* Button */}
             <button
               type="submit"
               className="bg-lime-300 hover:bg-lime-400 text-black font-semibold px-7 py-3 rounded-full transition"
@@ -83,10 +88,8 @@ const BangladeshMap = ({ serviceCenter }) => {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
-          {/* Fly to searched district */}
           <FlyToDistrict coords={activeCoords} />
 
-          {/* Markers for all service centers */}
           {serviceCenter.map((center, idx) => (
             <Marker key={idx} position={[center.latitude, center.longitude]}>
               <Popup autoOpen={center.district === activeDistrict}>
